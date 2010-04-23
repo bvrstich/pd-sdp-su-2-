@@ -7,7 +7,7 @@
 *.png
 *.gif
 callgrind.out.*
-pd_sdp
 tags
 docs
 workspace
+spin_pd
