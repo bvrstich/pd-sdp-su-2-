@@ -365,6 +365,10 @@ ostream &operator<<(ostream &output,BlockMatrix &blockmat_p){
 
 }
 
+/**
+ * Output the Blockmatrix to a file with name filename
+ * @param filename string with filename
+ */
 void BlockMatrix::out(const char *filename){
 
    ofstream output(filename);
