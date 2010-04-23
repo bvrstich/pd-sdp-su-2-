@@ -12,8 +12,9 @@ CPPSRC	= spin_pd.cpp\
            Matrix.cpp\
            Vector.cpp\
            BlockMatrix.cpp\
-           TPM.cpp\
            SPM.cpp\
+           TPM.cpp\
+           PHM.cpp\
            SUP.cpp\
            EIG.cpp
 

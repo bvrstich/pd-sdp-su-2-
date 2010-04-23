@@ -21,8 +21,9 @@ using std::ofstream;
 #include "BlockMatrix.h"
 #include "Vector.h"
 #include "BlockVector.h"
-#include "TPM.h"
 #include "SPM.h"
+#include "TPM.h"
+#include "PHM.h"
 #include "SUP.h"
 #include "EIG.h"
 
