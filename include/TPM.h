@@ -9,6 +9,7 @@ using std::ostream;
 #include "BlockMatrix.h"
 
 class SUP;
+class PHM;
 
 /**
  * @author Brecht Verstichel
@@ -85,6 +86,9 @@ class TPM : public BlockMatrix {
 
       void uncouple(const char *);
 
+      //G down afbeelding
+      void G(PHM &);
+
    private:
 
       //!static list of dimension [2][dim[i]][2] that takes in a tp index i and a spinquantumnumber S, and returns two sp indices: a = t2s[S][i][0] and b = t2s[S][i][1]
@@ -92,6 +96,9 @@ class TPM : public BlockMatrix {
 
       //!static list of dimension [M][M] that takes two sp indices a,b and a spinquantumnumber S, and returns a tp index i: i = s2t[S][a][b]
       static int ***s2t;
+
+      //!list of 6j symbols needed.
+      static double **_6j;
 
       //!static counter that counts the number of TPM objects running in the program
       static int counter;

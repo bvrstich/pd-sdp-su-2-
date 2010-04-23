@@ -7,9 +7,7 @@ using std::ostream;
 using std::ofstream;
 using std::endl;
 
-#include "PHM.h"
-#include "TPM.h"
-#include "SPM.h"
+#include "include.h"
 
 int PHM::counter = 0;
 
@@ -289,8 +287,8 @@ double PHM::skew_trace(){
  */
 void PHM::min_gunit(double scale){
 
-   for(int a = 0;a < M;++a)
-      for(int b = 0;b < M;++b)
+   for(int a = 0;a < M/2;++a)
+      for(int b = 0;b < M/2;++b)
          (*this)(0,a,a,b,b) -= 2.0*scale;
 
    double g = (M - N)/(N - 1.0);

@@ -8,6 +8,7 @@ using std::ostream;
 
 #include "Matrix.h"
 #include "TPM.h"
+#include "PHM.h"
 
 /**
  * @author Brecht Verstichel
@@ -40,6 +41,9 @@ class SPM : public Matrix {
       //TPM constructor
       SPM(double ,TPM &);
 
+      //PHM constructor
+      SPM(double ,PHM &);
+
       //destructor
       virtual ~SPM();
 
@@ -50,6 +54,8 @@ class SPM : public Matrix {
       int gM();
 
       void bar(double, TPM &);
+
+      void bar(double, PHM &);
 
    private:
 

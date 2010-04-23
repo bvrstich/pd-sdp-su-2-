@@ -8,15 +8,14 @@ using std::ifstream;
 using std::endl;
 using std::ios;
 
-#include "TPM.h"
-#include "SPM.h"
-#include "SUP.h"
-#include "BlockVector.h"
+#include "include.h"
 
 int TPM::counter = 0;
 
 int ***TPM::t2s;
 int ***TPM::s2t;
+
+double **TPM::_6j;
 
 /**
  * standard constructor for a spinsymmetrical tp matrix: constructs BlockMatrix object with 2 blocks, for S = 0 or 1,
@@ -97,6 +96,18 @@ TPM::TPM(int M,int N) : BlockMatrix(2) {
          for(int i = 0;i < M/2;++i)
             for(int j = i + 1;j < M/2;++j)
                s2t[S][j][i] = s2t[S][i][j];
+
+      //allocate
+      _6j = new double * [2];
+
+      for(int S = 0;S < 2;++S)
+         _6j[S] = new double [2];
+
+      //initialize
+      _6j[0][0] = -0.5;
+      _6j[0][1] = 0.5;
+      _6j[1][0] = 0.5;
+      _6j[1][1] = 1.0/6.0;
 
    }
 
@@ -179,6 +190,18 @@ TPM::TPM(TPM &tpm_c) : BlockMatrix(tpm_c){
             for(int j = i + 1;j < M/2;++j)
                s2t[S][j][i] = s2t[S][i][j];
 
+      //allocate
+      _6j = new double * [2];
+
+      for(int S = 0;S < 2;++S)
+         _6j[S] = new double [2];
+
+      //initialize
+      _6j[0][0] = -0.5;
+      _6j[0][1] = 0.5;
+      _6j[1][0] = 0.5;
+      _6j[1][1] = 1.0/6.0;
+
    }
 
    ++counter;
@@ -195,6 +218,8 @@ TPM::~TPM(){
 
       for(int S = 0;S < 2;++S){
 
+         delete [] _6j[S];
+
          delete [] s2t[S][0];
          delete [] s2t[S];
 
@@ -207,6 +232,8 @@ TPM::~TPM(){
 
       delete [] s2t;
       delete [] t2s;
+
+      delete [] _6j;
 
    }
 
@@ -340,17 +367,17 @@ void TPM::hubbard(double U){
 
             if( (b == d) && ( ( (a + 1)%(M/2) == c ) || ( a == (c + 1)%(M/2) ) ) )
                (*this)(S,i,j) -= ward;
-            
+
             //only on-site interaction for singlet tp states:
             if(S == 0)
                if(i == j && a == b)
                   (*this)(S,i,j) += 2.0*U;
 
-             if(a == b)
-                (*this)(S,i,j) /= std::sqrt(2.0);
+            if(a == b)
+               (*this)(S,i,j) /= std::sqrt(2.0);
 
-             if(c == d)
-                (*this)(S,i,j) /= std::sqrt(2.0);
+            if(c == d)
+               (*this)(S,i,j) /= std::sqrt(2.0);
 
          }
       }
@@ -507,6 +534,8 @@ void TPM::H(TPM &b,SUP &D){
 
    this->L_map(D.tpm(0),b);
 
+#ifdef __Q_CON
+
    //maak Q(b)
    TPM Qb(M,N);
    Qb.Q(1,b);
@@ -518,6 +547,24 @@ void TPM::H(TPM &b,SUP &D){
    Qb.Q(1,hulp);
 
    *this += Qb;
+
+#endif
+
+#ifdef __G_CON
+
+   //maak G(b)
+   PHM Gb(M,N);
+   Gb.G(b);
+
+   PHM hulpje(M,N);
+
+   hulpje.L_map(D.phm(),Gb);
+
+   hulp.G(hulpje);
+
+   *this += hulp;
+
+#endif
 
    this->proj_Tr();
 
@@ -589,9 +636,20 @@ void TPM::S(int option,TPM &tpm_d){
    double b = 0.0;
    double c = 0.0;
 
+#ifdef __Q_CON
+
    a += 1.0;
    b += (4.0*N*N + 2.0*N - 4.0*N*M + M*M - M)/(N*N*(N - 1.0)*(N - 1.0));
    c += (2.0*N - M)/((N - 1.0)*(N - 1.0));
+
+#endif
+
+#ifdef __G_CON
+
+   a += 4.0;
+   c += (2.0*N - M - 2.0)/((N - 1.0)*(N - 1.0));
+
+#endif
 
    this->Q(option,a,b,c,tpm_d);
 
@@ -640,6 +698,14 @@ void TPM::collaps(int option,SUP &S){
    hulp.Q(1,S.tpm(1));
 
    *this += hulp;
+
+#ifdef __G_CON
+
+   hulp.G(S.phm());
+
+   *this += hulp;
+
+#endif
 
    if(option == 1)
       this->proj_Tr();
@@ -778,5 +844,67 @@ void TPM::uncouple(const char *filename){
             }
 
       }
+
+}
+
+/**
+ * The G down map, maps a PHM object onto a TPM object using the G map.
+ * @param phm input PHM
+ */
+void TPM::G(PHM &phm){
+
+   SPM spm(1.0/(N - 1.0),phm);
+
+   int sign;
+   int a,b,c,d;
+
+   for(int S = 0;S < 2;++S){
+
+      sign = 1 - 2*S;
+
+      for(int i = 0;i < this->gdim(S);++i){
+
+         a = t2s[S][i][0];
+         b = t2s[S][i][1];
+
+         for(int j = i;j < this->gdim(S);++j){
+
+            c = t2s[S][j][0];
+            d = t2s[S][j][1];
+
+            //init
+            (*this)(S,i,j) = 0.0;
+
+            //ph part
+            for(int Z = 0;Z < 2;++Z)
+               (*this)(S,i,j) -= this->gdeg(Z)*_6j[S][Z] * ( phm(Z,a,d,c,b) + phm(Z,b,c,d,a) + sign*phm(Z,b,d,c,a) + sign*phm(Z,a,c,d,b) );
+
+            //4 sp parts
+            if(b == d)
+               (*this)(S,i,j) += spm(a,c);
+
+            if(a == c)
+               (*this)(S,i,j) += spm(b,d);
+
+            if(a == d)
+               (*this)(S,i,j) += sign*spm(b,c);
+
+            if(b == c)
+               (*this)(S,i,j) += sign*spm(a,d);
+
+            //norm of the basisset:
+            if(a == b)
+               (*this)(S,i,j) /= std::sqrt(2.0);
+
+            if(c == d)
+               (*this)(S,i,j) /= std::sqrt(2.0);
+
+         }
+
+      }
+
+   }
+
+   this->symmetrize();
 
 }

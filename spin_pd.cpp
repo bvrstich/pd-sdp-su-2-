@@ -17,15 +17,7 @@ using std::cout;
 using std::endl;
 using std::ofstream;
 
-#include "Matrix.h"
-#include "BlockMatrix.h"
-#include "Vector.h"
-#include "BlockVector.h"
-#include "SPM.h"
-#include "TPM.h"
-#include "PHM.h"
-#include "SUP.h"
-#include "EIG.h"
+#include "include.h"
 
 /**
  * 
@@ -57,10 +49,7 @@ int main(void){
    S.init_S();
 
    SUP Z(M,N);
-   Z.init_Z(20.0,ham,S);
-
-   Z.tpm(0).uncouple("../pd_sdp-bright/Z0.in");
-   Z.tpm(1).uncouple("../pd_sdp-bright/Z1.in");
+   Z.init_Z(100.0,ham,S);
 
    int dim = Z.gdim();
 
@@ -116,7 +105,6 @@ int main(void){
 
       //los het stelsel op, geeft aantal iteraties nodig terug:
       cout << delta.solve(b,D_inv) << "\t";
-
 
       //nog updaten van S en Z
       SUP DS(M,N);

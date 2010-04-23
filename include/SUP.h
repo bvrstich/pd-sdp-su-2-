@@ -6,8 +6,22 @@
 
 using std::ostream;
 
-#include "Vector.h"
 #include "TPM.h"
+#include "PHM.h"
+
+//definitions:
+#ifdef PQ
+
+#define __Q_CON
+
+#endif
+
+#ifdef PQG
+
+#define __Q_CON
+#define __G_CON
+
+#endif
 
 class EIG;
 
@@ -117,6 +131,12 @@ class SUP{
 
       void fill_Random();
 
+#ifdef __G_CON
+
+      PHM &phm();
+
+#endif
+
    private:
 
       //!double pointer of TPM's, will contain the P and Q block of the SUP in the first and second block.
@@ -130,6 +150,13 @@ class SUP{
 
       //!total dimension of the SUP matrix
       int dim;
+
+#ifdef __G_CON
+
+      //!pointer to the particle hole matrix
+      PHM *SZ_ph;
+
+#endif
 
 };
 

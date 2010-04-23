@@ -8,9 +8,7 @@ using std::ostream;
 using std::ofstream;
 using std::ifstream;
 
-#include "lapack.h"
-#include "Vector.h"
-#include "Matrix.h"
+#include "include.h"
 
 /**
  * constructor that takes dimension as input

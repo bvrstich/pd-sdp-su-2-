@@ -9,6 +9,20 @@ using std::ostream;
 #include "BlockVector.h"
 #include "SUP.h"
 
+//definitions:
+#ifdef PQ
+
+#define __Q_CON
+
+#endif
+
+#ifdef PQG
+
+#define __Q_CON
+#define __G_CON
+
+#endif
+
 /**
  * @author Brecht Verstichel
  * @date 20-04-2010\n\n
@@ -56,6 +70,12 @@ class EIG{
 
       BlockVector<TPM> &tpv(int);
 
+#ifdef __G_CON
+
+      BlockVector<PHM> &phv();
+
+#endif
+
       double min();
 
       double max();
@@ -66,6 +86,13 @@ class EIG{
 
       //!double pointer to a BlockVector<TPM> object, the eigenvalues of the P and Q part of a SUP matrix will be stored here.
       BlockVector<TPM> **v_tp;
+
+#ifdef __G_CON
+      
+      //!single pointer to a BlockVector<PHM> object, the eigenvalues of G part of a SUP matrix will be stored here.
+      BlockVector<PHM> *v_ph;
+
+#endif
 
       //!number of particles
       int N;

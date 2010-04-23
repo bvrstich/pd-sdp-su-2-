@@ -8,8 +8,7 @@ using std::ostream;
 using std::ofstream;
 using std::ifstream;
 
-#include "Matrix.h"
-#include "BlockMatrix.h"
+#include "include.h"
 
 /**
  * constructor: Watch out, the matrices themself haven't been allocated yet. 

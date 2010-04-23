@@ -3,10 +3,8 @@
 #include <fstream>
 
 using std::ostream;
-using std::ofstream;
 
-#include "SUP.h"
-#include "EIG.h"
+#include "include.h"
 
 /**
  * standard constructor\n
@@ -25,6 +23,14 @@ SUP::SUP(int M,int N){
       SZ_tp[i] = new TPM(M,N);
 
    this->dim = M*(M - 1);
+
+#ifdef __G_CON
+
+   SZ_ph = new PHM(M,N);
+
+   dim += M*M;
+
+#endif
 
 }
 
@@ -49,6 +55,16 @@ SUP::SUP(SUP &SZ_c){
    (*SZ_tp[0]) = (*SZ_c.SZ_tp[0]);
    (*SZ_tp[1]) = (*SZ_c.SZ_tp[1]);
 
+#ifdef __G_CON
+
+   dim += M*M;
+   
+   SZ_ph = new PHM(M,N);
+
+   *SZ_ph = *SZ_c.SZ_ph;
+
+#endif
+
 }
 
 /**
@@ -61,6 +77,12 @@ SUP::~SUP(){
 
    delete [] SZ_tp;
 
+#ifdef __G_CON
+   
+   delete SZ_ph;
+
+#endif
+
 }
 
 /**
@@ -71,6 +93,12 @@ SUP &SUP::operator+=(SUP &SZ_pl){
 
    for(int i = 0;i < 2;++i)
       (*SZ_tp[i]) += (*SZ_pl.SZ_tp[i]);
+
+#ifdef __G_CON
+   
+   (*SZ_ph) += (*SZ_pl.SZ_ph);
+
+#endif
 
    return *this;
 
@@ -85,6 +113,12 @@ SUP &SUP::operator-=(SUP &SZ_pl){
    for(int i = 0;i < 2;++i)
       (*SZ_tp[i]) -= (*SZ_pl.SZ_tp[i]);
 
+#ifdef __G_CON
+   
+   (*SZ_ph) -= (*SZ_pl.SZ_ph);
+
+#endif
+
    return *this;
 
 }
@@ -97,6 +131,12 @@ SUP &SUP::operator=(SUP &SZ_c){
 
    (*SZ_tp[0]) = (*SZ_c.SZ_tp[0]);
    (*SZ_tp[1]) = (*SZ_c.SZ_tp[1]);
+
+#ifdef __G_CON
+
+   (*SZ_ph) = (*SZ_c.SZ_ph);
+
+#endif
 
    return *this;
 
@@ -112,6 +152,12 @@ SUP &SUP::operator=(double &a){
    (*SZ_tp[0]) = a;
    (*SZ_tp[1]) = a;
 
+#ifdef __G_CON
+
+   (*SZ_ph) = a;
+
+#endif
+
    return *this;
 
 }
@@ -125,6 +171,19 @@ TPM &SUP::tpm(int i){
    return *SZ_tp[i];
 
 }
+
+#ifdef __G_CON
+
+/**
+ * @return pointer to the PHM block: SZ_ph
+ */
+PHM &SUP::phm(){
+
+   return *SZ_ph;
+
+}
+
+#endif
 
 /**
  * Initialization of the SUP matrix S, is just u^0: see primal_dual.pdf for more information
@@ -142,6 +201,13 @@ ostream &operator<<(ostream &output,SUP &SZ_p){
    output << (*SZ_p.SZ_tp[0]) << std::endl;
    output << (*SZ_p.SZ_tp[1]);
 
+#ifdef __G_CON
+
+   output << std::endl;
+   output << (*SZ_p.SZ_ph);
+
+#endif
+
    return output;
 
 }
@@ -153,6 +219,12 @@ void SUP::fill_Random(){
 
    SZ_tp[0]->fill_Random();
    SZ_tp[1]->fill_Random();
+
+#ifdef __G_CON
+
+   SZ_ph->fill_Random();
+
+#endif
 
 }
 
@@ -208,6 +280,12 @@ double SUP::ddot(SUP &SZ_i){
    for(int i = 0;i < 2;++i)
       ward += SZ_tp[i]->ddot(*SZ_i.SZ_tp[i]);
 
+#ifdef __G_CON
+   
+   ward += SZ_ph->ddot(*SZ_i.SZ_ph);
+
+#endif
+
    return ward;
 
 }
@@ -221,6 +299,12 @@ void SUP::invert(){
    for(int i = 0;i < 2;++i)
       SZ_tp[i]->invert();
 
+#ifdef __G_CON
+   
+   SZ_ph->invert();
+
+#endif
+
 }
 
 /**
@@ -231,6 +315,12 @@ void SUP::dscal(double alpha){
 
    for(int i = 0;i < 2;++i)
       SZ_tp[i]->dscal(alpha);
+
+#ifdef __G_CON
+   
+   SZ_ph->dscal(alpha);
+
+#endif
 
 }
 
@@ -325,6 +415,12 @@ void SUP::sqrt(int option){
    for(int i = 0;i < 2;++i)
       SZ_tp[i]->sqrt(option);
 
+#ifdef __G_CON
+
+   SZ_ph->sqrt(option);
+
+#endif
+
 }
 
 /**
@@ -338,6 +434,12 @@ void SUP::L_map(SUP &map,SUP &object){
    for(int i = 0;i < 2;++i)
       SZ_tp[i]->L_map(map.tpm(i),object.tpm(i));
 
+#ifdef __G_CON
+
+   SZ_ph->L_map(map.phm(),object.phm());
+
+#endif
+
 }
 
 /**
@@ -350,6 +452,12 @@ void SUP::daxpy(double alpha,SUP &SZ_p){
    for(int i = 0;i < 2;++i)
       SZ_tp[i]->daxpy(alpha,SZ_p.tpm(i));
 
+#ifdef __G_CON
+   
+   SZ_ph->daxpy(alpha,SZ_p.phm());
+
+#endif
+
 }
 
 /**
@@ -361,6 +469,12 @@ double SUP::trace(){
 
    for(int i = 0;i < 2;++i)
       ward += SZ_tp[i]->trace();
+
+#ifdef __G_CON
+   
+   ward += SZ_ph->trace();
+
+#endif
 
    return ward;
 
@@ -394,6 +508,12 @@ SUP &SUP::mprod(SUP &A,SUP &B){
    for(int i= 0;i < 2;++i)
       SZ_tp[i]->mprod(A.tpm(i),B.tpm(i));
 
+#ifdef __G_CON
+
+   SZ_ph->mprod(A.phm(),B.phm());
+
+#endif
+
    return *this;
 
 }
@@ -407,6 +527,12 @@ void SUP::fill(TPM &tpm){
    *SZ_tp[0] = tpm;
    SZ_tp[1]->Q(1,tpm);
 
+#ifdef __G_CON
+   
+   SZ_ph->G(tpm);
+
+#endif
+
 }
 
 /**
@@ -416,6 +542,12 @@ void SUP::fill(TPM &tpm){
 void SUP::fill(){
 
    SZ_tp[1]->Q(1,*SZ_tp[0]);
+
+#ifdef __G_CON
+
+   SZ_ph->G(*SZ_tp[0]);
+
+#endif 
 
 }
 
@@ -496,6 +628,14 @@ double SUP::U_norm(){
 
    norm = M*(M - 1)/2 * (1 + q*q);
 
+#ifdef __G_CON
+
+   double g = (M - N)/(N - 1.0);
+
+   norm += M*M * (1.0 + g*g) + 2*g*M;
+
+#endif
+
    return norm;
 
 }
@@ -510,6 +650,13 @@ void SUP::proj_U_Tr(){
    //dan deze factor aftrekken met u^0
    SZ_tp[0]->min_unit(ward);
    SZ_tp[1]->min_qunit(ward);
+
+#ifdef __G_CON
+
+   //dan deze factor aftrekken met u^0
+   SZ_ph->min_gunit(ward);
+
+#endif
 
 }
 
@@ -526,6 +673,16 @@ double SUP::U_trace(){
 
    //plus q times trace of the Q piece of the SUP
    ward += q*SZ_tp[1]->trace();
+
+#ifdef __G_CON
+
+   //g is the factor before the identity matrix in the image of G(1)
+   double g = (M - N)/(N - 1.0);
+
+   //skew trace is sum_{ab} G_{aa;bb}
+   ward += g*SZ_ph->trace() + SZ_ph->skew_trace();
+
+#endif
 
    return ward;
 

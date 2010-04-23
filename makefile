@@ -9,14 +9,14 @@
 # -----------------------------------------------------------------------------
 BINNAME = spin_pd
 CPPSRC	= spin_pd.cpp\
-           Matrix.cpp\
-           Vector.cpp\
-           BlockMatrix.cpp\
-           SPM.cpp\
-           TPM.cpp\
-           PHM.cpp\
-           SUP.cpp\
-           EIG.cpp
+            Matrix.cpp\
+            Vector.cpp\
+            BlockMatrix.cpp\
+            SPM.cpp\
+            TPM.cpp\
+            PHM.cpp\
+            SUP.cpp\
+            EIG.cpp
 
 OBJ	= $(CPPSRC:.cpp=.o)
 
@@ -37,7 +37,7 @@ CXX	= g++
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
 CFLAGS	= -I$(INCLUDE) -g -Wall
-LDFLAGS	= -g -Wall
+LDFLAGS	= --g -Wall
 
 
 # =============================================================================
@@ -47,11 +47,39 @@ all:
 	@echo
 	@echo '  +++ Building $(BINNAME)...'
 	@echo	
-	$(MAKE) $(BRIGHT_ROOT)/$(BINNAME)
+	$(MAKE) $(BRIGHT_ROOT)/$(BINNAME) DEFS="-DPQG"
 	@if test $?; then \
 	   echo; echo '*************** FAILED! ***************' ; echo; \
 	 else \
 	   echo; echo '  +++ $(BINNAME) has been built successfully!'; \
+	   echo; \
+	 fi
+
+#------------------------------------------------------------------------------
+#  Compile with only P and Q conditions activated
+#------------------------------------------------------------------------------
+
+PQ:
+	@echo
+	@echo '  +++ Building $(BINNAME) with P and Q conditions'
+	@echo	
+	$(MAKE) $(BRIGHT_ROOT)/$(BINNAME) DEFS="-DPQ"
+	@if test $?; then \
+	   echo; echo '*************** FAILED! ***************' ; echo; \
+	 else \
+	   echo; echo '  +++ $(BINNAME) has been built with P and Q conditions successfully!'; \
+	   echo; \
+	 fi
+
+PQG:
+	@echo
+	@echo '  +++ Building $(BINNAME) with P, Q and G conditions active'
+	@echo	
+	$(MAKE) $(BRIGHT_ROOT)/$(BINNAME) DEFS="-DPQG"
+	@if test $?; then \
+	   echo; echo '*************** FAILED! ***************' ; echo; \
+	 else \
+	   echo; echo '  +++ $(BINNAME) has been built with P, Q and G conditions successfully!'; \
 	   echo; \
 	 fi
 

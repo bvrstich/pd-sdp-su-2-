@@ -5,7 +5,7 @@
 using std::ostream;
 using std::endl;
 
-#include "SPM.h"
+#include "include.h"
 
 /**
  * constructor, makes matrix of dimension M/2, there will be two degenerate blocks +1/2,-1/2. So
@@ -42,6 +42,20 @@ SPM::SPM(double scale,TPM &tpm) : Matrix(tpm.gM()/2) {
    this->N = tpm.gN();
 
    this->bar(scale,tpm);
+
+}
+
+/**
+ * PHM constructor: Creates a SPM initialized on the "bar" of the PHM.
+ * @param scale the factor u want the SPM to be scaled with
+ * @param phm the PHM out of which the SPM will be initiated.
+ */
+SPM::SPM(double scale,PHM &phm) : Matrix(phm.gM()/2) {
+
+   this->M = phm.gM();
+   this->N = phm.gN();
+
+   this->bar(scale,phm);
 
 }
 
@@ -110,6 +124,35 @@ void SPM::bar(double scale,TPM &tpm){
 
             //S = 1 stuk: hier kan nooit a = b en c = d wegens antisymmetrie
             (*this)(a,c) += 3.0*tpm(1,a,b,c,b);
+
+         }
+
+         //nog schalen
+         (*this)(a,c) *= 0.5*scale;
+
+      }
+
+   this->symmetrize();
+
+}
+
+/**
+ * Trace out a set of indices to create the "bar" matrix of a PHM, slight difference from the bar(TPM) function (normalization of the tp basisset).
+ * @param scale the factor u want the SPM to be scaled with
+ * @param phm the PHM out of which the SPM will be filled
+ */
+void SPM::bar(double scale,PHM &phm){
+
+   for(int a = 0;a < M/2;++a)
+      for(int c = a;c < M/2;++c){
+
+         (*this)(a,c) = 0.0;
+
+         for(int b = 0;b < M/2;++b){
+
+            //S = 0 stuk
+            for(int S = 0;S < 2;++S)
+               (*this)(a,c) += phm.gdeg(S)*phm(S,a,b,c,b);
 
          }
 

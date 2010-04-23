@@ -7,9 +7,7 @@ using std::ostream;
 using std::ofstream;
 using std::ifstream;
 
-#include "Matrix.h"
-#include "Vector.h"
-#include "lapack.h"
+#include "include.h"
 
 /**
  * constructor 
