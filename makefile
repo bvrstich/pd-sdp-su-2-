@@ -15,6 +15,7 @@ CPPSRC	= spin_pd.cpp\
             SPM.cpp\
             TPM.cpp\
             PHM.cpp\
+            DPM.cpp\
             SUP.cpp\
             EIG.cpp
 
