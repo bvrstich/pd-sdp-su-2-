@@ -14,6 +14,8 @@ int DPM::counter = 0;
 int ***DPM::dp2s;
 int *****DPM::s2dp;
 
+double **DPM::_6j;
+
 /**
  * standard constructor: constructs BlockMatrix object with 2 blocks, for S = 1/2 and 3/2.
  * if counter == 0, allocates and constructs the lists containing the relationship between sp and dp basis.
@@ -105,6 +107,11 @@ DPM::~DPM(){
 
       delete [] dp2s;
 
+      for(int S = 0;S < 2;++S)
+         delete [] _6j[S];
+
+      delete [] _6j;
+
    }
 
    --counter;
@@ -113,7 +120,6 @@ DPM::~DPM(){
 
 /** 
  * Function that allocates and initializes the lists needed in the program, called when the first DPM object is constructed,
- * I think that this should actually be a static function, but for purely esthetic reasons.
  */
 void DPM::construct_lists(){
 
@@ -251,6 +257,18 @@ void DPM::construct_lists(){
 
          }
 
+   //allocate
+   _6j = new double * [2];
+
+   for(int S = 0;S < 2;++S)
+      _6j[S] = new double [2];
+
+   //initialize
+   _6j[0][0] = -0.5;
+   _6j[0][1] = 0.5;
+   _6j[1][0] = 0.5;
+   _6j[1][1] = 1.0/6.0;
+
 }
 
 /**
@@ -287,127 +305,383 @@ int DPM::gM(){
  */
 double DPM::operator()(int S,int S_ab,int a,int b,int c,int S_de,int d,int e,int z) const {
 
-   //if all the indices on either side are equal, the result is zero due to antisymmetry
-   if( ( a == b && b == c ) || ( d == e && e == z ) )
+   int *i = new int [2];
+   double *coef_i = new double [2];
+
+   int dim_i = get_inco(S,S_ab,a,b,c,i,coef_i);
+
+   if(dim_i == 0){
+
+      delete [] i;
+      delete [] coef_i;
+
+      return 0.0;
+
+   }
+
+   int *j = new int [2];
+   double *coef_j = new double [2];
+
+   int dim_j = get_inco(S,S_de,d,e,z,j,coef_j);
+
+   if(dim_j == 0){
+
+      delete [] i;
+      delete [] j;
+
+      delete [] coef_i;
+      delete [] coef_j;
+
+      return 0.0;
+
+   }
+
+   double ward = 0.0;
+
+   for(int I = 0;I < dim_i;++I)
+      for(int J = 0;J < dim_j;++J)
+         ward += coef_i[I] * coef_j[J] * (*this)(S,i[I],j[J]);
+
+   delete [] i;
+   delete [] j;
+
+   delete [] coef_i;
+   delete [] coef_j;
+
+   return ward;
+
+}
+
+/** 
+ * Static member function that gets the dp-indices and their coefficients of the sp indices S,S_ab,a,b,c.
+ * @param S block index of the state
+ * @param S_ab intermediate spincoupling of a and b.
+ * @param a first sp orbital
+ * @param b second sp orbital
+ * @param c third sp orbital
+ * @param i pointer of dim 1 or 2 containing the indices occuring in the expansion of this particular dp state in the normal basis (a==b,c a < b < c).
+ * @param coef pointer of dim 1 or 2 containing the coefficients occuring in the expansion.
+ * @return the number of terms in the expansion (1 or 2), also the dim of pointers i and coef. When zero is returned this is not a valid element.
+ */
+int DPM::get_inco(int S,int S_ab,int a,int b,int c,int *i,double *coef){
+
+   //they cannot all be equal
+   if(a == b && b == c)
       return 0;
 
-   //if spin == 1/2
-   if(S == 0){
+   if(S == 0){//spin 1/2 block:
 
-      if( (a == b) || (a < b && b < c) ){//normal row index ordering
+      //if normal basis:
+      if(a == b){
 
-         int i = s2dp[0][S_ab][a][b][c];
+         if(S_ab == 1)//spin has to be zero for a == b
+            return 0;
 
-         if( (d == e) || (d < e && e < z) ){//normal column ordering
+         i[0] = s2dp[0][0][a][b][c];
+         coef[0] = 1;
 
-            int j = s2dp[0][S_de][d][e][z];
-
-            return (*this)(0,i,j);
-
-         }
-         else{//anomal column ordering in the morning
-
-            return 0.0;
-
-         }
+         return 1;
 
       }
-      else{//anomal row ordening in the morning
+      else if (a < b && b < c){
 
-         return 0.0;
+         i[0] = s2dp[0][S_ab][a][b][c];
+         coef[0] = 1;
+
+         return 1;
+
+      }
+      else{//anomal basis:
+
+         int min,max,phase;
+
+         //first order a and b for code saving reasons
+         if(a < b){
+
+            min = a;
+            max = b;
+
+            phase = 1;
+
+         }
+         else{
+
+            min = b;
+            max = a;
+
+            phase = 1 - 2*S_ab;
+
+            if(c > max){//we still have one simple dim = 1 term left: b < a < c
+
+               i[0] = s2dp[0][S_ab][b][a][c];
+               coef[0] = phase;
+
+               return 1;
+
+            }
+
+         }
+
+         //now we have four possibilities left:
+         //don't forget to multiply every result by phase to get the right a and b for min and max!
+         // 1) c < min < max
+         // 2) c == min < max
+         // 3) min < c < max
+         // 4) min < max == c
+         if(c < min){//c < min < max
+
+            //the S_ca == 0 part:
+            i[0] = s2dp[0][0][c][min][max];
+            coef[0] = phase * std::sqrt(2.0*S_ab + 1) * (1 - 2*S_ab) * _6j[0][S_ab];
+
+            //the S_ca == 1 part:
+            i[1] = s2dp[0][1][c][min][max];
+            coef[1] = phase * std::sqrt(2.0*S_ab + 1) * (1 - 2*S_ab) * std::sqrt(3.0) * _6j[1][S_ab];
+
+            return 2;
+
+         }
+         else if(c == min){//c == min < max: this will also be a 1 dim list, because S_ac can only be 0 if a == c.
+
+            i[0] = s2dp[0][0][c][min][max];
+            coef[0] = std::sqrt(2.0) * phase * std::sqrt(2.0*S_ab + 1) * (1 - 2*S_ab) * _6j[0][S_ab];
+
+            return 1;
+
+         }
+         else if(c < max){//min < c < max
+
+            //S_ac == 0 part:
+            i[0] = s2dp[0][0][min][c][max];
+            coef[0] = phase * std::sqrt(2.0*S_ab + 1.0) * (1 - 2*S_ab) * _6j[0][S_ab];
+
+            //S_ac == 1 part:
+            i[1] = s2dp[0][1][min][c][max];
+            coef[1] = - phase * std::sqrt(2.0*S_ab + 1.0) * (1 - 2*S_ab) * std::sqrt(3.0) * _6j[1][S_ab];
+
+            return 2;
+
+         }
+         else{// min < c == max: also a 1 dim list, S_bc can only be 0 if b == c
+
+            i[0] = s2dp[0][0][max][c][min];
+            coef[0] = phase * std::sqrt(2.0) * std::sqrt(2.0*S_ab + 1.0) *_6j[0][S_ab];
+
+            return 1;
+
+         }
 
       }
 
    }
-   else{//the spin == 3/2: this is a totally antisymmetrical (in the sp spatial orbitals) block
+   else{//spin 3/2 block, totally antisymmetrical in the spatial sp orbs.
 
-      //eerst kijken of er geen indices gelijk zijn:
-      if(a == b || a == c || b == c)
+      //only S_ab == 1 can couple to 3/2's.
+      if(S_ab == 0)
          return 0;
 
-      if(d == e || d == z || e == z)
+      //if any of the sp orbs are equal, antisymmetry leads to zero:
+      if(a == b || b == c || c == a)
          return 0;
-
-      if(S_ab == 0 || S_de == 0)
-         return 0;
-
-      //dan kijken wel dp index met welke fase moet genomen worden:
-      //eerst voor de i
-      int i;
-
-      int phase = 1;
 
       if(a < b){
 
-         if(b < c)
-            i = s2dp[1][0][a][b][c];
-         else if(c < a)
-            i = s2dp[1][0][c][a][b];
-         else{
+         if(b < c){//a < b < c
 
-            i = s2dp[1][0][a][c][b];
-            phase *= -1;
+            i[0] = s2dp[1][0][a][b][c];
+            coef[0] = 1;
+
+         }
+         else if(c < a){//c < a < b
+
+            i[0] = s2dp[1][0][c][a][b];
+            coef[0] = 1;
+
+         }
+         else{//a < c < b
+
+            i[0] = s2dp[1][0][a][c][b];
+            coef[0] = -1;
 
          }
 
       }
-      else{
+      else{//b < a
 
-         if(a < c){
+         if(a < c){//b < a < c
 
-            i = s2dp[1][0][b][a][c];
-            phase *= -1;
-
-         }
-         else if(c < b){
-
-            i = s2dp[1][0][c][b][a];
-            phase *= -1;
+            i[0] = s2dp[1][0][b][a][c];
+            coef[0] = -1;
 
          }
-         else
-            i = s2dp[1][0][b][c][a];
+         else if(c < b){//c < b < a
 
-      }
+            i[0] = s2dp[1][0][c][b][a];
+            coef[0] = -1;
 
-      //idem voor j maar met d e z
-      int j;
+         }
+         else{//b < c < a
 
-      if(d < e){
-
-         if(e < z)
-            j = s2dp[1][0][d][e][z];
-         else if(z < d)
-            j = s2dp[1][0][z][d][e];
-         else{
-
-            j = s2dp[1][0][d][z][e];
-            phase *= -1;
+            i[0] = s2dp[1][0][b][c][a];
+            coef[0] = 1;
 
          }
 
       }
-      else{
 
-         if(d < z){
-
-            j = s2dp[1][0][e][d][z];
-            phase *= -1;
-
-         }
-         else if(z < e){
-
-            j = s2dp[1][0][z][e][d];
-            phase *= -1;
-
-         }
-         else
-            j = s2dp[1][0][e][z][d];
-
-      }
-
-      return phase*(*this)(1,i,j);
+      return 1;
 
    }
+
+}
+
+/**
+ * Print the uncoupled version of the DPM. Really only needed for debugging purposes, so can be inefficient.
+ */
+void DPM::uncouple(const char *filename){
+
+   ofstream output(filename);
+
+   output.precision(10);
+
+   //first make table of cg-coefs needed:
+   double cg[2][3][2][4][4];
+
+   //init
+   for(int i = 0;i < 2;++i)
+      for(int j = 0;j < 3;++j)
+         for(int k = 0;k < 2;++k)
+            for(int l = 0;l < 4;++l)
+               for(int m = 0;m < 4;++m)
+                  cg[i][j][k][l][m] = 0.0;
+
+   //(1/2 +1/2 1/2 -/1/2 | 0 0)
+   cg[0][1][0][0][1] = 1.0/std::sqrt(2.0);
+
+   //(1/2 -1/2 1/2 +/1/2 | 0 0)
+   cg[0][0][1][0][1] = -1.0/std::sqrt(2.0);
+
+   //(1/2 +1/2 1/2 -/1/2 | 1 0)
+   cg[0][1][0][2][1] = 1.0/std::sqrt(2.0);
+
+   //(1/2 -1/2 1/2 +/1/2 | 1 0)
+   cg[0][0][1][2][1] = 1.0/std::sqrt(2.0);
+
+   //(1/2 +1/2 1/2 +1/2 | 1 +1)
+   cg[0][1][1][2][2] = 1.0;
+
+   //(1/2 -1/2 1/2 -1/2 | 1 -1)
+   cg[0][0][0][2][0] = 1.0;
+
+   //(1 +1 1/2 +1/2 | 3/2 + 3/2)
+   cg[1][2][1][3][3] = 1.0;
+
+   //(1 -1 1/2 -1/2 | 3/2 - 3/2)
+   cg[1][0][0][3][0] = 1.0;
+
+   //(1 +1 1/2 -1/2 | 3/2 +1/2) and (1 -1 1/2 +1/2 | 3/2 -1/2)
+   cg[1][2][0][3][2] = cg[1][0][1][3][1] = 1.0/std::sqrt(3.0);
+
+   //(1 +1 1/2 -1/2 | 3/2 +1/2) and (1 -1 1/2 +1/2 | 3/2 -1/2)
+   cg[1][2][0][3][2] = cg[1][0][1][3][1] = 1.0/std::sqrt(3.0);
+
+   //(1 0 1/2 +1/2 | 3/2 +1/2 ) and (1 0 1/2 -1/2 | 3/2 -1/2)
+   cg[1][1][1][3][2] = cg[1][1][0][3][1] = std::sqrt(2.0/3.0);
+
+   //(1 +1 1/2 -1/2 | 1/2 +1/2) and (1 -1 1/2 +1/2 | 1/2 -1/2)
+   cg[1][2][0][1][2] = cg[1][0][1][1][1] = std::sqrt(2.0/3.0);
+
+   //(1 0 1/2 +1/2 | 1/2 +1/2) and (1 0 1/2 -1/2 | 1/2 -1/2)
+   cg[1][1][1][1][2] = cg[1][1][0][1][1] = -1.0/std::sqrt(3.0);
+
+   int a,b,c,d,e,z;
+   int s_a,s_b,s_c,s_d,s_e,s_z;
+
+   int M_ab,M_de;
+   int M_abc,M_dez;
+
+   double ward;
+
+   //three row indices of the DPM
+   for(int alpha = 0;alpha < M;++alpha)
+      for(int beta = alpha + 1;beta < M;++beta)
+         for(int gamma = beta + 1;gamma < M;++gamma){
+
+            //watch it now, 0 is down, 1 is up.
+            a = alpha/2;
+            s_a = alpha%2;
+
+            b = beta/2;
+            s_b = beta%2;
+
+            c = gamma/2;
+            s_c = gamma%2;
+
+            M_ab = s_a + s_b;
+            M_abc = M_ab + s_c;
+
+            //and the three column indices of the DPM
+            for(int delta = alpha;delta < M;++delta)
+               for(int epsilon = delta + 1;epsilon < M;++epsilon)
+                  for(int zeta = epsilon + 1;zeta < M;++zeta){
+
+                     d = delta/2;
+                     s_d = delta%2;
+
+                     e = epsilon/2;
+                     s_e = epsilon%2;
+
+                     z = zeta/2;
+                     s_z = zeta%2;
+
+                     M_de = s_d + s_e;
+                     M_dez = M_de + s_z;
+
+                     ward = 0.0;
+
+                     //all can go through
+                     if(M_abc == M_dez){
+
+                        //for S = 1/2
+                        if(M_abc != 0 && M_abc != 3){//if M = -3/2 or 3/2, then the S = 1/2 term is not there
+
+                           //4 terms left: S_ab and S_de = 0 or 1 
+
+                           //first S_ab == 0 and S_de == 0
+                           if(M_ab == 1 && M_de == 1)//only contribution from the M_ab == M_de == 0 term (0 == 1 here because -1/2 == 0 and +1/2 == 1)
+                              ward += cg[0][s_a][s_b][0][1] * cg[0][s_d][s_e][0][1] * (*this)(0,0,a,b,c,0,d,e,z);
+
+                           //S_ab == 0 and S_de == 1
+                           if(M_ab == 1)//no limit on M_de this time
+                              ward += cg[0][s_a][s_b][0][1] * cg[0][s_d][s_e][2][M_de] * cg[1][M_de][s_z][1][M_dez] * (*this)(0,0,a,b,c,1,d,e,z);
+
+                           //S_ab == 1 and S_de == 0
+                           if(M_de == 1)//no limit on M_ab this time
+                              ward += cg[0][s_a][s_b][2][M_ab] * cg[1][M_ab][s_c][1][M_abc] * cg[0][s_d][s_e][0][1] * (*this)(0,1,a,b,c,0,d,e,z);
+
+                           //S_ab == 1 and S_de == 1, no constraints
+                           ward += cg[0][s_a][s_b][2][M_ab] * cg[1][M_ab][s_c][1][M_abc] * cg[0][s_d][s_e][2][M_de] * cg[1][M_de][s_z][1][M_dez] 
+                           
+                              * (*this)(0,1,a,b,c,1,d,e,z);
+
+                        }
+
+                        //for S = 3/2: no constraints, but only the S_ab = S_de = 1 term will contribute
+                        ward += cg[0][s_a][s_b][2][M_ab] * cg[1][M_ab][s_c][3][M_abc] * cg[0][s_d][s_e][2][M_de] * cg[1][M_de][s_z][3][M_dez] * (*this)(1,1,a,b,c,1,d,e,z);
+
+                        //norms:
+                        if(a == b)
+                           ward *= std::sqrt(2.0);
+
+                        if(d == e)
+                           ward *= std::sqrt(2.0);
+
+                     }
+
+                     output << alpha << "\t" << beta << "\t" << gamma << "\t" << delta << "\t" << epsilon << "\t" << zeta << "\t" << ward << endl;
+
+                  }
+
+         }
 
 }

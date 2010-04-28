@@ -39,9 +39,18 @@ int main(void){
    cout.precision(10);
 
    int M = 8;//dim sp hilbert space
-   int N = 4;//nr of particles
+   int N = 3;//nr of particles
 
    DPM dpm(M,N);
+
+   dpm.fill_Random();
+
+   dpm.uncouple("../pd_sdp-bright/dpm.in");
+
+   BlockVector<DPM> v(dpm);
+
+   cout << v;
+
 /*
    //hamiltoniaan
    TPM ham(M,N);

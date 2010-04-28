@@ -47,6 +47,8 @@ class DPM : public BlockMatrix {
       //easy to access the numbers, in sp mode
       double operator()(int S,int S_ab,int a,int b,int c,int S_de,int d,int e,int f) const;
 
+      static int get_inco(int S,int S_ab,int a,int b,int c,int *i,double *coef);
+
       //geef N terug
       int gN();
 
@@ -65,6 +67,9 @@ class DPM : public BlockMatrix {
       //deduct scale times T1(1) matrix
       void min_tunit(double scale);
 
+      //print the uncoupled version of the dpm
+      void uncouple(const char *);
+
    private:
 
       //!static counter that counts the number of DPM objects running in the program
@@ -75,6 +80,9 @@ class DPM : public BlockMatrix {
 
       //!static list of dimension [2][2][M/2][M/2][M/2] that takes a block index S, an intermediate spin-index S_ab and three sp indices a,b and c and returns a dp index i: i = s2dp[S][S_ab][a][b][c]
       static int *****s2dp;
+
+      //!list of 6j symbols needed.
+      static double **_6j;
 
       //!nr of particles
       int N;
