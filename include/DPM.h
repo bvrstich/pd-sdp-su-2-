@@ -59,7 +59,7 @@ class DPM : public BlockMatrix {
       void T(double,double,double,TPM &);
 
       //maak een DPM van een TPM via de T1 conditie
-      void T(int option,TPM &);
+      void T(TPM &);
 
       //maak een DPM van een TPM via de hat functie
       void hat(TPM &);

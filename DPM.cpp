@@ -536,6 +536,400 @@ int DPM::get_inco(int S,int S_ab,int a,int b,int c,int *i,double *coef){
 }
 
 /**
+ * The spincoupled T1-like (generalized T1) map: maps a TPM object (tpm) on a DPM object (*this)
+ * @param A term before the tp part of the map
+ * @param B term before the np part of the map
+ * @param C term before the sp part of the map
+ * @param tpm input TPM
+ */
+void DPM::T(double A,double B,double C,TPM &tpm){
+
+   //make sp matrix out of tpm
+   SPM spm(C,tpm);
+
+   double ward = 2.0*B*tpm.trace();
+
+   int a,b,c,d,e,z;
+   int S_ab,S_de;
+
+   int sign_ab,sign_de;
+
+   double norm_ab,norm_de;
+
+   double hard;
+
+   //start with the S = 1/2 block, this is the most difficult one:
+   for(int i = 0;i < this->gdim(0);++i){
+
+      S_ab = dp2s[0][i][0];
+
+      a = dp2s[0][i][1];
+      b = dp2s[0][i][2];
+      c = dp2s[0][i][3];
+
+      sign_ab = 1 - 2*S_ab;
+
+      norm_ab = 1.0;
+
+      if(a == b)
+         norm_ab /= std::sqrt(2.0);
+
+      for(int j = i;j < this->gdim(0);++j){
+
+         S_de = dp2s[0][j][0];
+
+         d = dp2s[0][j][1];
+         e = dp2s[0][j][2];
+         z = dp2s[0][j][3];
+
+         sign_de = 1 - 2*S_de;
+
+         norm_de = 1.0;
+
+         if(d == e)
+            norm_de /= std::sqrt(2.0);
+
+         hard = std::sqrt( (2*S_ab + 1.0) * (2*S_de + 1.0) ) * _6j[S_ab][S_de];
+
+         //init
+         (*this)(0,i,j) = 0.0;
+
+         //the np part
+         if(i == j)
+            (*this)(0,i,j) = ward;
+
+         //other parts are a bit more difficult.
+         if(c == z){
+
+            if(S_ab == S_de){
+
+               //tp(1)
+               (*this)(0,i,j) += A * tpm(S_ab,a,b,d,e);
+
+               //sp(1) first term
+               if(b == e)
+                  (*this)(0,i,j) -= norm_ab * norm_de * spm(a,d);
+
+               //sp(2) first term
+               if(a == e)
+                  (*this)(0,i,j) -= sign_ab * norm_ab * norm_de * spm(b,d);
+
+               //sp(4) first term
+               if(b == d)
+                  (*this)(0,i,j) -= sign_de * norm_ab * norm_de * spm(a,e);
+
+               //sp(5) first term
+               if(a == d)
+                  (*this)(0,i,j) -= norm_ab * norm_de * spm(b,e);
+
+            }
+
+         }
+
+         if(b == z){
+
+            //tp(2)
+            if(a == c)
+               (*this)(0,i,j) += std::sqrt(2.0) * A * norm_ab * sign_ab * sign_de * hard * tpm(S_de,a,c,d,e);
+            else
+               (*this)(0,i,j) += A * norm_ab * sign_ab * sign_de * hard * tpm(S_de,a,c,d,e);
+
+            //sp(1) second term
+            if(c == e)
+               (*this)(0,i,j) -= sign_ab * sign_de * norm_ab * norm_de * hard * spm(a,d);
+
+            //sp(3)
+            if(a == e)
+               (*this)(0,i,j) -= sign_ab * norm_ab * norm_de * hard * spm(c,d);
+
+            //sp(4) second term
+            if(c == d)
+               (*this)(0,i,j) -= sign_ab * norm_ab * norm_de * hard * spm(a,e);
+
+            //sp(6)
+            if(a == d)
+               (*this)(0,i,j) -= sign_ab * sign_de * norm_ab * norm_de * hard * spm(c,e);
+
+         }
+
+         if(a == z){
+
+            //tp(3)
+            if(b == c)
+               (*this)(0,i,j) += std::sqrt(2.0) * A * norm_ab * sign_de * hard * tpm(S_de,b,c,d,e);
+            else
+               (*this)(0,i,j) += A * norm_ab * sign_de * hard * tpm(S_de,b,c,d,e);
+
+            //sp(2) second term
+            if(c == e)
+               (*this)(0,i,j) -= sign_de * norm_ab * norm_de * hard * spm(b,d);
+
+            //sp(5) second term
+            if(c == d)
+               (*this)(0,i,j) -= norm_ab * norm_de * hard * spm(b,e);
+
+         }
+
+         if(c == e){
+
+            //tp(4)
+            if(d == z)
+               (*this)(0,i,j) += std::sqrt(2.0) * A * norm_de * sign_ab * sign_de * hard * tpm(S_ab,a,b,d,z);
+            else
+               (*this)(0,i,j) += A * norm_de * sign_ab * sign_de * hard * tpm(S_ab,a,b,d,z);
+
+            //sp(7) first term
+            if(b == d)
+               (*this)(0,i,j) -= norm_ab * norm_de * sign_de * hard * spm(a,z);
+
+            //sp(8) first term
+            if(a == d)
+               (*this)(0,i,j) -= norm_ab * norm_de * sign_ab * sign_de * hard * spm(b,z);
+
+         }
+
+         if(b == e){
+
+            //tp(5)
+            double hulp = 0.0;
+
+            //sum over intermediate spin
+            for(int Z = 0;Z < 2;++Z)
+               hulp += (2*Z + 1.0) * _6j[Z][S_ab] * _6j[Z][S_de] * tpm(Z,a,c,d,z);
+
+            //correct for norms of the tpm
+            if(a == c)
+               hulp *= std::sqrt(2.0);
+
+            if(d == z)
+               hulp *= std::sqrt(2.0);
+
+            (*this)(0,i,j) += A * norm_ab * norm_de * sign_ab * sign_de * std::sqrt( (2*S_ab + 1.0) * (2*S_de + 1.0) ) * hulp;
+
+            //sp(7) second term
+            if(c == d)
+               (*this)(0,i,j) -= norm_ab * norm_de * hard * spm(a,z);
+
+            //sp(9) first term
+            if(a == d)
+               if(S_ab == S_de)
+                  (*this)(0,i,j) -= norm_ab * norm_de * spm(c,z);
+
+         }
+
+         if(a == e){
+
+            //tp(6)
+            double hulp = 0.0;
+
+            //sum over intermediate spin
+            for(int Z = 0;Z < 2;++Z)
+               hulp += (2*Z + 1.0) * _6j[Z][S_ab] * _6j[Z][S_de] * tpm(Z,b,c,d,z);
+
+            if(b == c)
+               hulp *= std::sqrt(2.0);
+
+            if(d == z)
+               hulp *= std::sqrt(2.0);
+
+            (*this)(0,i,j) += A * sign_de * std::sqrt( (2*S_ab + 1) * (2*S_de + 1.0) ) * norm_ab * norm_de * hulp;
+
+            //sp(8) second term
+            if(c == d)
+               (*this)(0,i,j) -= sign_ab * norm_ab * norm_de * hard * spm(b,z);
+
+            //sp(9) second term
+            if(b == d)
+               if(S_ab == S_de)
+                  (*this)(0,i,j) -= sign_ab * norm_ab * norm_de * spm(c,z);
+
+         }
+
+         if(c == d){
+
+            //tp(7)
+            if(e == z)
+               (*this)(0,i,j) += std::sqrt(2.0) * A * norm_de * sign_ab * hard * tpm(S_ab,a,b,e,z);
+            else
+               (*this)(0,i,j) += A * norm_de * sign_ab * hard * tpm(S_ab,a,b,e,z);
+
+         }
+
+         if(b == d){
+
+            //tp(8)
+            double hulp = 0.0;
+
+            //sum over intermediate spin
+            for(int Z = 0;Z < 2;++Z)
+               hulp += (2*Z + 1.0) * _6j[Z][S_ab] * _6j[Z][S_de] * tpm(Z,a,c,e,z);
+
+            if(a == c)
+               hulp *= std::sqrt(2.0);
+
+            if(e == z)
+               hulp *= std::sqrt(2.0);
+
+            (*this)(0,i,j) += A * sign_ab * std::sqrt( (2*S_ab + 1) * (2*S_de + 1.0) ) * norm_ab * norm_de * hulp;
+
+         }
+
+         if(a == d){
+
+            //tp(8)
+            double hulp = 0.0;
+
+            //sum over intermediate spin
+            for(int Z = 0;Z < 2;++Z)
+               hulp += (2*Z + 1.0) * _6j[Z][S_ab] * _6j[Z][S_de] * tpm(Z,b,c,e,z);
+
+            if(b == c)
+               hulp *= std::sqrt(2.0);
+
+            if(e == z)
+               hulp *= std::sqrt(2.0);
+
+            (*this)(0,i,j) += A * std::sqrt( (2*S_ab + 1) * (2*S_de + 1.0) ) * norm_ab * norm_de * hulp;
+
+         }
+
+      }
+   }
+
+
+   //then the S = 3/2 block, this should be easy, totally antisymmetrical 
+   for(int i = 0;i < this->gdim(1);++i){
+
+      a = dp2s[1][i][1];
+      b = dp2s[1][i][2];
+      c = dp2s[1][i][3];
+
+      for(int j = i;j < this->gdim(1);++j){
+
+         d = dp2s[1][j][1];
+         e = dp2s[1][j][2];
+         z = dp2s[1][j][3];
+
+         (*this)(1,i,j) = 0.0;
+
+         if(i == j)
+            (*this)(1,i,j) += ward;
+
+         if(c == z){
+
+            //tp(1)
+            (*this)(1,i,j) += A * tpm(1,a,b,d,e);
+
+            //sp(1) first part
+            if(b == e)
+               (*this)(1,i,j) -= spm(a,d);
+
+            //sp(4) first part
+            if(b == d)
+               (*this)(1,i,j) += spm(a,e);
+
+            //sp(5)
+            if(a == d)
+               (*this)(1,i,j) -= spm(b,e);
+
+         }
+
+         if(b == z){
+
+            //tp(2)
+            (*this)(1,i,j) -= A * tpm(1,a,c,d,e);
+
+            //sp(1) second part
+            if(c == e)
+               (*this)(1,i,j) += spm(a,d);
+
+            //sp(4) second part
+            if(c == d)
+               (*this)(1,i,j) -= spm(a,e);
+
+            //sp(6)
+            if(a == d)
+               (*this)(1,i,j) += spm(c,e);
+
+         }
+
+         if(c == e){
+
+            //tp(4)
+            (*this)(1,i,j) -= A * tpm(1,a,b,d,z);
+
+            //sp(7) first part
+            if(b == d)
+               (*this)(1,i,j) -= spm(a,z);
+
+            //sp(8) first part
+            if(a == d)
+               (*this)(1,i,j) += spm(b,z);
+
+         }
+
+         if(b == e){
+
+            //tp(5)
+            (*this)(1,i,j) += A * tpm(1,a,c,d,z);
+
+            //sp(7) second part
+            if(c == d)
+               (*this)(1,i,j) += spm(a,z);
+
+            //sp(9) first part
+            if(a == d)
+               (*this)(1,i,j) -= spm(c,z);
+
+         }
+
+         //tp(7)
+         if(c == d)
+            (*this)(1,i,j) += A * tpm(1,a,b,e,z);
+
+         //tp(8)
+         if(b == d)
+            (*this)(1,i,j) -= A * tpm(1,a,c,e,z);
+
+         //tp(9)
+         if(a == d)
+            (*this)(1,i,j) += A * tpm(1,b,c,e,z);
+
+      }
+   }
+
+}
+
+/**
+ * The T1-map: maps a TPM object (tpm) on a DPM object (*this). 
+ * @param tpm input TPM
+ */
+void DPM::T(TPM &tpm){
+
+   double a = 1.0;
+   double b = 1.0/(N*(N - 1.0));
+   double c = 1.0/(N - 1.0);
+
+   this->T(a,b,c,tpm);
+
+}
+
+/** 
+ * The hat function maps a TPM object tpm to a DPM object (*this) so that bar(this) = tpm,
+ * The inverse of the TPM::bar function. It is a T1-like map.
+ * @param tpm input TPM
+ */
+void DPM::hat(TPM &tpm){
+
+   double a = 1.0/(M - 4.0);
+   double b = 1.0/((M - 4.0)*(M - 3.0)*(M - 2.0));
+   double c = 1.0/((M - 4.0)*(M - 3.0));
+
+   this->T(a,b,c,tpm);
+
+}
+
+/**
  * Print the uncoupled version of the DPM. Really only needed for debugging purposes, so can be inefficient.
  */
 void DPM::uncouple(const char *filename){
@@ -661,7 +1055,7 @@ void DPM::uncouple(const char *filename){
 
                            //S_ab == 1 and S_de == 1, no constraints
                            ward += cg[0][s_a][s_b][2][M_ab] * cg[1][M_ab][s_c][1][M_abc] * cg[0][s_d][s_e][2][M_de] * cg[1][M_de][s_z][1][M_dez] 
-                           
+
                               * (*this)(0,1,a,b,c,1,d,e,z);
 
                         }

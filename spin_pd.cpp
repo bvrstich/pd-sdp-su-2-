@@ -39,13 +39,17 @@ int main(void){
    cout.precision(10);
 
    int M = 8;//dim sp hilbert space
-   int N = 3;//nr of particles
+   int N = 4;//nr of particles
+
+   TPM tpm(M,N);
+
+   tpm.fill_Random();
+
+   tpm.uncouple("../pd_sdp-bright/tpm.in");
 
    DPM dpm(M,N);
 
-   dpm.fill_Random();
-
-   dpm.uncouple("../pd_sdp-bright/dpm.in");
+   dpm.T(tpm);
 
    BlockVector<DPM> v(dpm);
 
