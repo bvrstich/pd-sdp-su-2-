@@ -566,6 +566,21 @@ void TPM::H(TPM &b,SUP &D){
 
 #endif
 
+#ifdef __T1_CON
+
+   DPM T1b(M,N);
+   T1b.T(b);
+
+   DPM hulp_T1(M,N);
+
+   hulp_T1.L_map(D.dpm(),T1b);
+
+   hulp.T(hulp_T1);
+
+   *this += hulp;
+
+#endif
+
    this->proj_Tr();
 
 }
@@ -651,6 +666,14 @@ void TPM::S(int option,TPM &tpm_d){
 
 #endif
 
+#ifdef __T1_CON
+
+   a += M - 4.0;
+   b += (M*M*M - 6.0*M*M*N -3.0*M*M + 12.0*M*N*N + 12.0*M*N + 2.0*M - 18.0*N*N - 6.0*N*N*N)/( 3.0*N*N*(N - 1.0)*(N - 1.0) );
+   c -= (M*M + 2.0*N*N - 4.0*M*N - M + 8.0*N - 4.0)/( 2.0*(N - 1.0)*(N - 1.0) );
+
+#endif
+
    this->Q(option,a,b,c,tpm_d);
 
 }
@@ -702,6 +725,14 @@ void TPM::collaps(int option,SUP &S){
 #ifdef __G_CON
 
    hulp.G(S.phm());
+
+   *this += hulp;
+
+#endif
+
+#ifdef __T1_CON
+
+   hulp.T(S.dpm());
 
    *this += hulp;
 
@@ -906,5 +937,85 @@ void TPM::G(PHM &phm){
    }
 
    this->symmetrize();
+
+}
+
+/**
+ * Construct a spincoupled TPM matrix out of a spincoupled DPM matrix, for the definition and derivation see symmetry.pdf
+ * @param dpm input DPM
+ */
+void TPM::bar(DPM &dpm){
+
+   int a,b,c,d;
+
+   double ward;
+
+   //first the S = 0 part, easiest:
+   for(int i = 0;i < this->gdim(0);++i){
+
+      a = t2s[0][i][0];
+      b = t2s[0][i][1];
+
+      for(int j = i;j < this->gdim(0);++j){
+
+         c = t2s[0][j][0];
+         d = t2s[0][j][1];
+
+         (*this)(0,i,j) = 0.0;
+
+         //only total S = 1/2 can remain because cannot couple to S = 3/2 with intermediate S = 0
+         for(int l = 0;l < M/2;++l)
+            (*this)(0,i,j) += 2.0 * dpm(0,0,a,b,l,0,c,d,l);
+
+      }
+   }
+
+   //then the S = 1 part:
+   for(int i = 0;i < this->gdim(1);++i){
+
+      a = t2s[1][i][0];
+      b = t2s[1][i][1];
+
+      for(int j = i;j < this->gdim(1);++j){
+
+         c = t2s[1][j][0];
+         d = t2s[1][j][1];
+
+         (*this)(1,i,j) = 0.0;
+
+         for(int Z = 0;Z < 2;++Z){//loop over the dpm blocks: S = 1/2 and 3/2 = Z + 1/2
+
+            ward = 0.0;
+
+            for(int l = 0;l < M/2;++l)
+               ward += dpm(Z,1,a,b,l,1,c,d,l);
+
+            ward *= (2 * (Z + 0.5) + 1.0)/3.0;
+
+            (*this)(1,i,j) += ward;
+
+         }
+
+      }
+   }
+
+   this->symmetrize();
+
+}
+
+/** 
+ * The T1-down map that maps a DPM on TPM. This is just a Q-like map using the TPM::bar (dpm) as input.
+ * @param dpm the input DPM matrix
+ */
+void TPM::T(DPM &dpm){
+
+   TPM tpm(M,N);
+   tpm.bar(dpm);
+
+   double a = 1;
+   double b = 1.0/(3.0*N*(N - 1.0));
+   double c = 0.5/(N - 1.0);
+
+   this->Q(1,a,b,c,tpm);
 
 }

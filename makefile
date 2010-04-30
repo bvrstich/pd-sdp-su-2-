@@ -10,14 +10,14 @@
 BINNAME = spin_pd
 CPPSRC	= spin_pd.cpp\
             Matrix.cpp\
-            Vector.cpp\
             BlockMatrix.cpp\
+            Vector.cpp\
             SPM.cpp\
             TPM.cpp\
             PHM.cpp\
             DPM.cpp\
             SUP.cpp\
-            EIG.cpp
+            EIG.cpp\
 
 OBJ	= $(CPPSRC:.cpp=.o)
 
@@ -81,6 +81,18 @@ PQG:
 	   echo; echo '*************** FAILED! ***************' ; echo; \
 	 else \
 	   echo; echo '  +++ $(BINNAME) has been built with P, Q and G conditions successfully!'; \
+	   echo; \
+	 fi
+
+PQGT1:
+	@echo
+	@echo '  +++ Building $(BINNAME) with P, Q ,G and T1 conditions active'
+	@echo	
+	$(MAKE) $(BRIGHT_ROOT)/$(BINNAME) DEFS="-DPQGT1"
+	@if test $?; then \
+	   echo; echo '*************** FAILED! ***************' ; echo; \
+	 else \
+	   echo; echo '  +++ $(BINNAME) has been built with P, Q, G and T1 conditions successfully!'; \
 	   echo; \
 	 fi
 

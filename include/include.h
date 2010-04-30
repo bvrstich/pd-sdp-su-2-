@@ -12,6 +12,14 @@
 
 #endif
 
+#ifdef PQGT1
+
+#define __Q_CON
+#define __G_CON
+#define __T1_CON
+
+#endif
+
 #include "lapack.h"
 #include "Matrix.h"
 #include "BlockMatrix.h"

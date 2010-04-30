@@ -898,6 +898,8 @@ void DPM::T(double A,double B,double C,TPM &tpm){
       }
    }
 
+   this->symmetrize();
+
 }
 
 /**
@@ -926,6 +928,24 @@ void DPM::hat(TPM &tpm){
    double c = 1.0/((M - 4.0)*(M - 3.0));
 
    this->T(a,b,c,tpm);
+
+}
+
+/**
+ * Deduct from (*this) the T1-map of the unit matrix times a constant (scale)\n\n
+ * this -= scale* T1(1) \n\n
+ * see notes primal_dual.pdf for more information.
+ * @param scale the constant
+ */
+void DPM::min_tunit(double scale){
+
+   double t = (M*(M - 1.0) - 3.0*N*(M - N))/(N*(N - 1.0));
+
+   scale *= t;
+
+   for(int S = 0;S < 2;++S)
+      for(int i = 0;i < this->gdim(S);++i)
+         (*this)(S,i,i) -= scale;
 
 }
 

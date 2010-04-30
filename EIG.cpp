@@ -33,6 +33,14 @@ EIG::EIG(SUP &SZ){
 
 #endif
 
+#ifdef __T1_CON
+   
+   dim += M*(M - 1)*(M - 2)/6;
+
+   v_dp = new BlockVector<DPM>(SZ.dpm());
+
+#endif
+
 }
 
 /**
@@ -60,6 +68,14 @@ EIG::EIG(EIG &eig_c){
 
 #endif
 
+#ifdef __T1_CON
+
+   dim += M*(M - 1)*(M - 2)/6;
+
+   v_dp = new BlockVector<DPM>(eig_c.dpv());
+
+#endif
+
 }
 
 /**
@@ -74,6 +90,12 @@ EIG &EIG::operator=(EIG &eig_c){
 #ifdef __G_CON
 
    *v_ph = *eig_c.v_ph;
+
+#endif
+
+#ifdef __T1_CON
+
+   *v_dp = *eig_c.v_dp;
 
 #endif
 
@@ -97,6 +119,12 @@ EIG::~EIG(){
 
 #endif
 
+#ifdef __T1_CON
+   
+   delete v_dp;
+
+#endif
+
 }
 
 /**
@@ -114,6 +142,12 @@ void EIG::diagonalize(SUP &sup){
 
 #endif
 
+#ifdef __T1_CON
+   
+   v_dp->diagonalize(sup.dpm());
+
+#endif
+
 }
 
 ostream &operator<<(ostream &output,EIG &eig_p){
@@ -124,6 +158,12 @@ ostream &operator<<(ostream &output,EIG &eig_p){
 #ifdef __G_CON
    
    std::cout << eig_p.phv() << std::endl;
+
+#endif
+
+#ifdef __T1_CON
+   
+   std::cout << eig_p.dpv() << std::endl;
 
 #endif
 
@@ -174,6 +214,20 @@ BlockVector<PHM> &EIG::phv(){
 
 #endif
 
+#ifdef __T1_CON
+
+/** 
+ * get the BlockVector<DPM> object containing the eigenvalues of the DPM block T1 of the SUP matrix
+ * @return a Vector<DPM> object containing the desired eigenvalues
+ */
+BlockVector<DPM> &EIG::dpv(){
+
+   return *v_dp;
+
+}
+
+#endif
+
 /**
  * @return total dimension of the EIG object
  */
@@ -205,6 +259,14 @@ double EIG::min(){
 
 #endif
 
+#ifdef __T1_CON
+
+   //lowest eigenvalue of the T1 block
+   if(ward > v_dp->min())
+      ward = v_dp->min();
+
+#endif
+
    return ward;
 
 }
@@ -230,6 +292,14 @@ double EIG::max(){
 
 #endif
 
+#ifdef __T1_CON
+
+   //highest eigenvalue of the T1 block
+   if(ward < v_dp->max())
+      ward = v_dp->max();
+
+#endif
+
    return ward;
 
 }
@@ -249,6 +319,14 @@ double EIG::center_dev(){
    sum += v_ph->sum();
 
    log_product += v_ph->log_product();
+
+#endif
+
+#ifdef __T1_CON
+
+   sum += v_dp->sum();
+
+   log_product += v_dp->log_product();
 
 #endif
 
@@ -275,6 +353,12 @@ double EIG::centerpot(double alpha,EIG &eigen_Z,double c_S,double c_Z){
 #ifdef __G_CON
 
    ward -= v_ph->centerpot(alpha) + (eigen_Z.phv()).centerpot(alpha);
+
+#endif
+
+#ifdef __T1_CON
+
+   ward -= v_dp->centerpot(alpha) + (eigen_Z.dpv()).centerpot(alpha);
 
 #endif
 

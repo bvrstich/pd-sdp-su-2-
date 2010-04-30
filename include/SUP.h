@@ -8,6 +8,7 @@ using std::ostream;
 
 #include "TPM.h"
 #include "PHM.h"
+#include "DPM.h"
 
 //definitions:
 #ifdef PQ
@@ -20,6 +21,14 @@ using std::ostream;
 
 #define __Q_CON
 #define __G_CON
+
+#endif
+
+#ifdef PQGT1
+
+#define __Q_CON
+#define __G_CON
+#define __T1_CON
 
 #endif
 
@@ -135,6 +144,16 @@ class SUP{
 
       PHM &phm();
 
+      int gn_ph();
+
+#endif
+
+#ifdef __T1_CON
+      
+      DPM &dpm();
+
+      int gn_dp();
+
 #endif
 
    private:
@@ -148,6 +167,9 @@ class SUP{
       //!nr of particles
       int N;
 
+      //!dimension of tp space
+      int n_tp;
+
       //!total dimension of the SUP matrix
       int dim;
 
@@ -155,6 +177,19 @@ class SUP{
 
       //!pointer to the particle hole matrix
       PHM *SZ_ph;
+
+      //!dimenson of particle hole space
+      int n_ph;
+
+#endif
+
+#ifdef __T1_CON
+      
+      //!pointer tot he three particles matrix DPM
+      DPM *SZ_dp;
+
+      //!dimension of three particle space
+      int n_dp;
 
 #endif
 

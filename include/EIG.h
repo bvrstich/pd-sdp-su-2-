@@ -23,6 +23,14 @@ using std::ostream;
 
 #endif
 
+#ifdef PQGT1
+
+#define __Q_CON
+#define __G_CON
+#define __T1_CON
+
+#endif
+
 /**
  * @author Brecht Verstichel
  * @date 20-04-2010\n\n
@@ -76,6 +84,12 @@ class EIG{
 
 #endif
 
+#ifdef __T1_CON
+      
+      BlockVector<DPM> &dpv();
+
+#endif
+
       double min();
 
       double max();
@@ -91,6 +105,13 @@ class EIG{
       
       //!single pointer to a BlockVector<PHM> object, the eigenvalues of G part of a SUP matrix will be stored here.
       BlockVector<PHM> *v_ph;
+
+#endif
+
+#ifdef __T1_CON
+      
+      //!single pointer to a BlockVector<DPM> object, the eigenvalues of T1 part of a SUP matrix will be stored here.
+      BlockVector<DPM> *v_dp;
 
 #endif
 
