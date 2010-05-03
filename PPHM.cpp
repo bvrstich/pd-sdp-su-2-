@@ -41,7 +41,7 @@ PPHM::PPHM(int M,int N) : BlockMatrix(2) {
 /**
  * copy constructor: constructs BlockMatrix object with two blocks, on for S=1/2 and one for S=3/2, and copies the content of the pphm_c blocks into it,
  * if counter == 0, allocates and constructs the lists containing the relationship between sp and pph basis.
- * @param dpm_c PPHM object to be copied into (*this)
+ * @param pphm_c PPHM object to be copied into (*this)
  */
 PPHM::PPHM(PPHM &pphm_c) : BlockMatrix(pphm_c) {
 

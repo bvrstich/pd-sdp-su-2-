@@ -349,14 +349,14 @@ void BlockMatrix::symmetrize(){
 
 }
 
-ostream &operator<<(ostream &output,BlockMatrix &blockmat_p){
+ostream &operator<<(ostream &output,BlockMatrix &blockmatrix_p){
 
-   for(int i = 0;i < blockmat_p.nr;++i){
+   for(int i = 0;i < blockmatrix_p.nr;++i){
 
-      output << i << "\t" << blockmat_p.dim[i] << "\t" << blockmat_p.degen[i] << endl;
+      output << i << "\t" << blockmatrix_p.dim[i] << "\t" << blockmatrix_p.degen[i] << endl;
       output << endl;
 
-      output << *blockmat_p.blockmatrix[i] << endl;
+      output << *blockmatrix_p.blockmatrix[i] << endl;
 
    }
 

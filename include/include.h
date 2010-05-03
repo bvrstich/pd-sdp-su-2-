@@ -29,6 +29,7 @@
 #include "SPM.h"
 #include "PHM.h"
 #include "DPM.h"
+#include "PPHM.h"
 
 #include "SUP.h"
 #include "EIG.h"
