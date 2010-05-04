@@ -593,3 +593,153 @@ void PPHM::T(TPM &tpm){
    }
 
 }
+
+/**
+ * Deduct scale times the T2 of the unit matrix from (*this).
+ * @param scale The number by which to scale the unitmatrix.
+ */
+void PPHM::min_tunit(double scale){
+
+   int i,j;
+
+   //S_ab == 0: (0) a b a; (S_de) c b c
+   for(int a = 0;a < M/2;++a){
+
+      for(int b = 0;b < a;++b){//b < a : b a a
+
+         i = s2pph[0][0][b][a][a];
+
+         //S_de == 0: c >= a always:
+         for(int c = a;c < M/2;++c){//b < c
+
+            j = s2pph[0][0][b][c][c];
+
+         }
+
+         //S_de == 1: c can be anything except == b:
+         for(int c = 0;c < b;++c){//c < b : c b c
+
+            j = s2pph[0][1][c][b][c];
+
+         }
+
+         for(int c = b + 1;c < M/2;++c){//c > b: b c c
+
+            j = s2pph[0][1][b][c][c];
+
+         }
+
+      }
+
+      //b == a
+      i = s2pph[0][0][a][a][a];
+
+      //S_de == 0:
+      
+      //first c == a == b
+      j = i;
+
+      for(int c = a + 1;c < M/2;++c){//then c > a : a c c
+
+         j = s2pph[0][0][a][c][c];
+
+      }
+
+      //S_de == 1: c can be anything  except == a:
+      for(int c = 0;c < a;++c){//c < a : c a c
+
+         j = s2pph[0][1][c][a][c];
+
+      }
+
+      for(int c = a + 1;c < M/2;++c){//c > a: a c c
+
+         j = s2pph[0][1][a][c][c];
+
+      }
+
+      //b > a: a b a
+      for(int b = a + 1;b < M/2;++b){
+
+         i = s2pph[0][0][a][b][a];
+
+         //S_de == 0: c always >= a
+         for(int c = a;c < b;++c){//c < b : c b c
+
+            j = s2pph[0][0][c][b][c];
+
+         }
+
+         //c == b
+         j = s2pph[0][0][b][b][b];
+
+         for(int c = b + 1;c < M/2;++c){//c > b : b c c
+
+            j = s2pph[0][0][b][c][c];
+
+         }
+
+         //S_de == 1: c can be anything except == b
+         for(int c = 0;c < b;++c){//c < b : c b c
+
+            j = s2pph[0][1][c][b][c];
+
+         }
+
+         for(int c = b + 1;c < M/2;++c){//c > b : b c c
+
+            j = s2pph[0][1][b][c][c];
+
+         }
+
+      }
+
+   }
+
+   //S_ab == 1: (1) a b a ; (1) c b c
+   for(int a = 0;a < M/2;++a){
+
+      for(int b = 0;b < a;++b){//b < a : b a a
+
+         i = s2pph[0][1][b][a][a];
+
+         //c always >= a and always S_de == 1
+         for(int c = a;c < M/2;++c){//b < a < c
+
+            j = s2pph[0][1][b][c][c];
+
+         }
+
+      }
+
+      for(int b = a + 1;b < M/2;++b){//b > a: a b a
+
+         i = s2pph[0][1][a][b][a];
+
+         //c alway >= a and c != b
+         for(int c = a;c < b;++c){//c < b : c b c
+
+            j = s2pph[0][1][c][b][c];
+
+         }
+
+         for(int c = b + 1;c < M/2;++c){//c > b : b c c
+
+            j = s2pph[0][1][b][c][c];
+
+         }
+
+      }
+
+   }
+
+}
+
+/** 
+ * @return the skew trace, for PPHM matrices defined in uncoupled form as sum_abc PPHM(a,b,a,c,b,c). For coupled form see symmetry.pdf
+ */
+double PPHM::skew_trace(){
+
+   return 0;
+
+}

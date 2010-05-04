@@ -41,19 +41,11 @@ int main(void){
    int M = 8;//dim sp hilbert space
    int N = 4;//nr of particles
 
-   TPM tpm(M,N);
-
-   tpm.fill_Random();
-
-   tpm.uncouple("../pd_sdp-bright/tpm.in");
-
    PPHM pphm(M,N);
 
-   pphm.T(tpm);
+   pphm.fill_Random();
 
-   BlockVector<PPHM> v(pphm);
-
-   cout << v;
+   pphm.min_tunit(1.0);
 
 /*
    //hamiltoniaan
