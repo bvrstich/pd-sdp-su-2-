@@ -592,6 +592,8 @@ void PPHM::T(TPM &tpm){
 
    }
 
+   this->symmetrize();
+
 }
 
 /**
@@ -614,6 +616,8 @@ void PPHM::min_tunit(double scale){
 
             j = s2pph[0][0][b][c][c];
 
+            (*this)(0,i,j) -= 0.5 * scale;
+
          }
 
          //S_de == 1: c can be anything except == b:
@@ -621,11 +625,15 @@ void PPHM::min_tunit(double scale){
 
             j = s2pph[0][1][c][b][c];
 
+            (*this)(0,i,j) -= 0.5 * std::sqrt(3.0) * scale;
+
          }
 
          for(int c = b + 1;c < M/2;++c){//c > b: b c c
 
             j = s2pph[0][1][b][c][c];
+
+            (*this)(0,i,j) += 0.5 * std::sqrt(3.0) * scale;
 
          }
 
@@ -639,9 +647,13 @@ void PPHM::min_tunit(double scale){
       //first c == a == b
       j = i;
 
+      (*this)(0,i,j) -= scale;
+
       for(int c = a + 1;c < M/2;++c){//then c > a : a c c
 
          j = s2pph[0][0][a][c][c];
+
+         (*this)(0,i,j) -= scale / std::sqrt(2.0);
 
       }
 
@@ -650,11 +662,15 @@ void PPHM::min_tunit(double scale){
 
          j = s2pph[0][1][c][a][c];
 
+         (*this)(0,i,j) -= std::sqrt(1.5) * scale;
+
       }
 
       for(int c = a + 1;c < M/2;++c){//c > a: a c c
 
          j = s2pph[0][1][a][c][c];
+
+         (*this)(0,i,j) += std::sqrt(1.5) * scale;
 
       }
 
@@ -668,14 +684,20 @@ void PPHM::min_tunit(double scale){
 
             j = s2pph[0][0][c][b][c];
 
+            (*this)(0,i,j) -= 0.5 * scale;
+
          }
 
          //c == b
          j = s2pph[0][0][b][b][b];
 
+         (*this)(0,i,j) -= scale / std::sqrt(2.0);
+
          for(int c = b + 1;c < M/2;++c){//c > b : b c c
 
             j = s2pph[0][0][b][c][c];
+
+            (*this)(0,i,j) -= 0.5 * scale;
 
          }
 
@@ -684,11 +706,15 @@ void PPHM::min_tunit(double scale){
 
             j = s2pph[0][1][c][b][c];
 
+            (*this)(0,i,j) -= 0.5 * std::sqrt(3.0) * scale;
+
          }
 
          for(int c = b + 1;c < M/2;++c){//c > b : b c c
 
             j = s2pph[0][1][b][c][c];
+
+            (*this)(0,i,j) += 0.5 * std::sqrt(3.0) * scale;
 
          }
 
@@ -708,6 +734,8 @@ void PPHM::min_tunit(double scale){
 
             j = s2pph[0][1][b][c][c];
 
+            (*this)(0,i,j) -= 1.5 * scale;
+
          }
 
       }
@@ -721,17 +749,31 @@ void PPHM::min_tunit(double scale){
 
             j = s2pph[0][1][c][b][c];
 
+            (*this)(0,i,j) -= 1.5 * scale;
+
          }
 
          for(int c = b + 1;c < M/2;++c){//c > b : b c c
 
             j = s2pph[0][1][b][c][c];
 
+            (*this)(0,i,j) += 1.5 * scale;
+
          }
 
       }
 
    }
+
+   double t2 = (M - N)/(N - 1.0);
+
+   scale = t2*scale;
+
+   for(int S = 0;S < 2;++S)
+      for(int k = 0;k < this->gdim(S);++k)
+         (*this)(S,k,k) -= scale;
+
+   this->symmetrize();
 
 }
 
@@ -740,6 +782,62 @@ void PPHM::min_tunit(double scale){
  */
 double PPHM::skew_trace(){
 
-   return 0;
+   double ward = 0.0;
+
+   double hard;
+   double spin;
+
+   for(int S_ab = 0;S_ab < 2;++S_ab)
+      for(int S_de = 0;S_de < 2;++S_de){
+
+         spin = std::sqrt( (2*S_ab + 1.0) * (2*S_de + 1.0) );
+
+         for(int a = 0;a < M/2;++a)
+            for(int b = 0;b < M/2;++b)
+               for(int c = 0;c < M/2;++c){
+
+                  hard = spin * (*this)(0,S_ab,a,b,a,S_de,c,b,c);
+
+                  if(a == b)
+                     hard *= std::sqrt(2.0);
+
+                  if(c == b)
+                     hard *= std::sqrt(2.0);
+
+                  ward += hard;
+
+               }
+
+      }
+
+   return ward;
+
+}
+
+ostream &operator<<(ostream &output,PPHM &pphm_p){
+
+   for(int S = 0;S < pphm_p.gnr();++S){
+
+      output << S << "\t" << pphm_p.gdim(S) << "\t" << pphm_p.gdeg(S) << std::endl;
+      output << std::endl;
+
+      for(int i = 0;i < pphm_p.gdim(S);++i)
+         for(int j = 0;j < pphm_p.gdim(S);++j){
+
+            output << S << "\t" << i << "\t" << j << "\t|\t" << 
+            
+               pphm_p.pph2s[S][i][0] << "\t" << pphm_p.pph2s[S][i][1] << "\t" << pphm_p.pph2s[S][i][2] << "\t" << pphm_p.pph2s[S][i][3] << 
+
+               "\t" << pphm_p.pph2s[S][j][0] << "\t" << pphm_p.pph2s[S][j][1] << "\t" << pphm_p.pph2s[S][j][2] << "\t" << pphm_p.pph2s[S][j][3] 
+               
+               << "\t" << pphm_p(S,i,j) << endl;
+
+         }
+
+      output << endl;
+
+   }
+
+   return output;
 
 }

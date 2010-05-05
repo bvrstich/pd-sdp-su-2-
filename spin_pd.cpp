@@ -38,14 +38,26 @@ int main(void){
 
    cout.precision(10);
 
-   int M = 8;//dim sp hilbert space
-   int N = 4;//nr of particles
+   int M = 4;//dim sp hilbert space
+   int N = 2;//nr of particles
+
+   TPM tpm(M,N);
+
+   tpm.fill_Random();
+
+   tpm.uncouple("../pd_sdp-bright/tpm.in");
 
    PPHM pphm(M,N);
 
-   pphm.fill_Random();
+   pphm.T(tpm);
 
-   pphm.min_tunit(1.0);
+   cout << pphm;
+
+   SPM bar(M,N);
+
+   bar.bar(0.5/(N - 1.0),pphm);
+
+   cout << bar;
 
 /*
    //hamiltoniaan

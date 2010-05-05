@@ -7,6 +7,7 @@ using std::ostream;
 
 #include "BlockMatrix.h"
 #include "TPM.h"
+#include "PPHM.h"
 
 /**
  * @author Brecht Verstichel
@@ -58,6 +59,9 @@ class PHM : public BlockMatrix {
       void min_gunit(double scale);
 
       void uncouple(const char *filename);
+
+      //trace the first pair of indices of a PPHM object
+      void bar(PPHM &);
 
    private:
 

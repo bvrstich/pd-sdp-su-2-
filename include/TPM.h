@@ -11,6 +11,7 @@ using std::ostream;
 class SUP;
 class PHM;
 class DPM;
+class PPHM;
 
 /**
  * @author Brecht Verstichel
@@ -95,6 +96,12 @@ class TPM : public BlockMatrix {
 
       //T1 down
       void T(DPM &);
+
+      //trace last pair of indices of PPHM
+      void bar(PPHM &);
+
+      //T2 down
+      void T(PPHM &);
 
    private:
 

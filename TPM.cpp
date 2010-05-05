@@ -289,8 +289,8 @@ ostream &operator<<(ostream &output,TPM &tpm_p){
 
    for(int S = 0;S < 2;++S){
 
-      std::cout << S << "\t" << tpm_p.gdim(S) << "\t" << tpm_p.gdeg(S) << std::endl;
-      std::cout << std::endl;
+      output << S << "\t" << tpm_p.gdim(S) << "\t" << tpm_p.gdeg(S) << std::endl;
+      output << std::endl;
 
       for(int i = 0;i < tpm_p.gdim(S);++i)
          for(int j = 0;j < tpm_p.gdim(S);++j){
@@ -1017,5 +1017,67 @@ void TPM::T(DPM &dpm){
    double c = 0.5/(N - 1.0);
 
    this->Q(1,a,b,c,tpm);
+
+}
+
+/**
+ * The bar function that maps a PPHM object onto a TPM object by tracing away the last pair of incdices of the PPHM
+ * @param pphm Input PPHM object
+ */
+void TPM::bar(PPHM &pphm){
+
+   int a,b,c,d;
+
+   double ward;
+
+   for(int Z = 0;Z < 2;++Z){
+
+      for(int i = 0;i < this->gdim(Z);++i){
+
+         a = t2s[Z][i][0];
+         b = t2s[Z][i][1];
+
+         for(int j = i;j < this->gdim(Z);++j){
+
+            c = t2s[Z][j][0];
+            d = t2s[Z][j][1];
+
+            (*this)(Z,i,j) = 0.0;
+
+            for(int S = 0;S < 2;++S){//loop over three particle spin: 1/2 and 3/2
+
+               ward = (2.0*(S + 0.5) + 1.0)/(2.0*Z + 1.0);
+
+               for(int l = 0;l < M/2;++l)
+                  (*this)(Z,i,j) += ward * pphm(S,Z,a,b,l,Z,c,d,l);
+
+            }
+
+         }
+      }
+
+   }
+   
+   this->symmetrize();
+
+}
+
+/**
+ * The spincoupled T2-down map that maps a PPHM on a TPM object.
+ * @param pphm Input PPHM object
+ */
+void TPM::T(PPHM &pphm){
+
+   //first make the bar tpm
+   TPM tpm(M,N);
+   tpm.bar(pphm);
+
+   //then make the bar phm
+   PHM phm(M,N);
+   phm.bar(pphm);
+
+   //also make the bar spm with the correct scale factor
+   SPM spm(M,N);
+   spm.bar(0.5/(N - 1.0),pphm);
 
 }

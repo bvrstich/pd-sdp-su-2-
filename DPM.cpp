@@ -949,6 +949,32 @@ void DPM::min_tunit(double scale){
 
 }
 
+ostream &operator<<(ostream &output,DPM &dpm_p){
+
+   for(int S = 0;S < dpm_p.gnr();++S){
+
+      output << S << "\t" << dpm_p.gdim(S) << "\t" << dpm_p.gdeg(S) << std::endl;
+      output << std::endl;
+
+      for(int i = 0;i < dpm_p.gdim(S);++i)
+         for(int j = 0;j < dpm_p.gdim(S);++j){
+
+            output << S << "\t" << i << "\t" << j << "\t|\t" << 
+            
+               dpm_p.dp2s[S][i][0] << "\t" << dpm_p.dp2s[S][i][1] << "\t" << dpm_p.dp2s[S][i][2] << "\t" << dpm_p.dp2s[S][i][3] << 
+
+               "\t" << dpm_p.dp2s[S][j][0] << "\t" << dpm_p.dp2s[S][j][1] << "\t" << dpm_p.dp2s[S][j][2] << "\t" << dpm_p.dp2s[S][j][3] << "\t" << dpm_p(S,i,j) << endl;
+
+         }
+
+      output << endl;
+
+   }
+
+   return output;
+
+}
+
 /**
  * Print the uncoupled version of the DPM. Really only needed for debugging purposes, so can be inefficient.
  */
