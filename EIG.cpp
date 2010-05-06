@@ -41,6 +41,14 @@ EIG::EIG(SUP &SZ){
 
 #endif
 
+#ifdef __T2_CON
+   
+   dim += M*M*(M - 1)/2;
+
+   v_pph = new BlockVector<PPHM>(SZ.pphm());
+
+#endif
+
 }
 
 /**
@@ -76,6 +84,14 @@ EIG::EIG(EIG &eig_c){
 
 #endif
 
+#ifdef __T2_CON
+
+   dim += M*M*(M - 1)/2;
+
+   v_pph = new BlockVector<PPHM>(eig_c.pphv());
+
+#endif
+
 }
 
 /**
@@ -96,6 +112,12 @@ EIG &EIG::operator=(EIG &eig_c){
 #ifdef __T1_CON
 
    *v_dp = *eig_c.v_dp;
+
+#endif
+
+#ifdef __T2_CON
+
+   *v_pph = *eig_c.v_pph;
 
 #endif
 
@@ -125,6 +147,12 @@ EIG::~EIG(){
 
 #endif
 
+#ifdef __T2_CON
+   
+   delete v_pph;
+
+#endif
+
 }
 
 /**
@@ -148,6 +176,12 @@ void EIG::diagonalize(SUP &sup){
 
 #endif
 
+#ifdef __T2_CON
+   
+   v_pph->diagonalize(sup.pphm());
+
+#endif
+
 }
 
 ostream &operator<<(ostream &output,EIG &eig_p){
@@ -164,6 +198,12 @@ ostream &operator<<(ostream &output,EIG &eig_p){
 #ifdef __T1_CON
    
    std::cout << eig_p.dpv() << std::endl;
+
+#endif
+
+#ifdef __T2_CON
+   
+   std::cout << eig_p.pphv() << std::endl;
 
 #endif
 
@@ -192,7 +232,7 @@ int EIG::gM(){
 /** 
  * get the BlockVector<TPM> object containing the eigenvalues of the TPM blocks P and Q
  * @param i == 0, the eigenvalues of the P block will be returned, i == 1, the eigenvalues of the Q block will be returned
- * @return a Vector<TPM> object containing the desired eigenvalues
+ * @return a BlockVector<TPM> object containing the desired eigenvalues
  */
 BlockVector<TPM> &EIG::tpv(int i){
 
@@ -204,7 +244,7 @@ BlockVector<TPM> &EIG::tpv(int i){
 
 /** 
  * get the BlockVector<PHM> object containing the eigenvalues of the PHM block G
- * @return a Vector<PHM> object containing the desired eigenvalues
+ * @return a BlockVector<PHM> object containing the desired eigenvalues
  */
 BlockVector<PHM> &EIG::phv(){
 
@@ -218,11 +258,25 @@ BlockVector<PHM> &EIG::phv(){
 
 /** 
  * get the BlockVector<DPM> object containing the eigenvalues of the DPM block T1 of the SUP matrix
- * @return a Vector<DPM> object containing the desired eigenvalues
+ * @return a BlockVector<DPM> object containing the desired eigenvalues
  */
 BlockVector<DPM> &EIG::dpv(){
 
    return *v_dp;
+
+}
+
+#endif
+
+#ifdef __T2_CON
+
+/** 
+ * get the BlockVector<PPHM> object containing the eigenvalues of the PPHM block T2 of the SUP matrix
+ * @return a BlockVector<PPHM> object containing the desired eigenvalues
+ */
+BlockVector<PPHM> &EIG::pphv(){
+
+   return *v_pph;
 
 }
 
@@ -267,6 +321,14 @@ double EIG::min(){
 
 #endif
 
+#ifdef __T2_CON
+
+   //lowest eigenvalue of the T2 block
+   if(ward > v_pph->min())
+      ward = v_pph->min();
+
+#endif
+
    return ward;
 
 }
@@ -300,6 +362,14 @@ double EIG::max(){
 
 #endif
 
+#ifdef __T2_CON
+
+   //highest eigenvalue of the T2 block
+   if(ward < v_pph->max())
+      ward = v_pph->max();
+
+#endif
+
    return ward;
 
 }
@@ -327,6 +397,14 @@ double EIG::center_dev(){
    sum += v_dp->sum();
 
    log_product += v_dp->log_product();
+
+#endif
+
+#ifdef __T2_CON
+
+   sum += v_pph->sum();
+
+   log_product += v_pph->log_product();
 
 #endif
 
@@ -359,6 +437,12 @@ double EIG::centerpot(double alpha,EIG &eigen_Z,double c_S,double c_Z){
 #ifdef __T1_CON
 
    ward -= v_dp->centerpot(alpha) + (eigen_Z.dpv()).centerpot(alpha);
+
+#endif
+
+#ifdef __T2_CON
+
+   ward -= v_pph->centerpot(alpha) + (eigen_Z.pphv()).centerpot(alpha);
 
 #endif
 

@@ -581,6 +581,21 @@ void TPM::H(TPM &b,SUP &D){
 
 #endif
 
+#ifdef __T2_CON
+
+   PPHM T2b(M,N);
+   T2b.T(b);
+
+   PPHM hulp_T2(M,N);
+
+   hulp_T2.L_map(D.pphm(),T2b);
+
+   hulp.T(hulp_T2);
+
+   *this += hulp;
+
+#endif
+
    this->proj_Tr();
 
 }
@@ -674,6 +689,14 @@ void TPM::S(int option,TPM &tpm_d){
 
 #endif
 
+#ifdef __T2_CON
+   
+   a += 5.0*M - 8.0;
+   b += 2.0/(N - 1.0);
+   c += (2.0*N*N + (M - 2.0)*(4.0*N - 3.0) - M*M)/(2.0*(N - 1.0)*(N - 1.0));
+
+#endif
+
    this->Q(option,a,b,c,tpm_d);
 
 }
@@ -733,6 +756,14 @@ void TPM::collaps(int option,SUP &S){
 #ifdef __T1_CON
 
    hulp.T(S.dpm());
+
+   *this += hulp;
+
+#endif
+
+#ifdef __T2_CON
+   
+   hulp.T(S.pphm());
 
    *this += hulp;
 
@@ -1079,5 +1110,64 @@ void TPM::T(PPHM &pphm){
    //also make the bar spm with the correct scale factor
    SPM spm(M,N);
    spm.bar(0.5/(N - 1.0),pphm);
+
+   int a,b,c,d;
+   int sign;
+
+   double norm;
+
+   for(int S = 0;S < 2;++S){
+
+      sign = 1 - 2*S;
+
+      for(int i = 0;i < this->gdim(S);++i){
+
+         a = t2s[S][i][0];
+         b = t2s[S][i][1];
+
+         for(int j = i;j < this->gdim(S);++j){
+
+            c = t2s[S][j][0];
+            d = t2s[S][j][1];
+
+            //determine the norm for the basisset
+            norm = 1.0;
+
+            if(S == 0){
+
+               if(a == b)
+                  norm /= std::sqrt(2.0);
+
+               if(c == d)
+                  norm /= std::sqrt(2.0);
+
+            }
+
+            //first the tp part
+            (*this)(S,i,j) = tpm(S,i,j);
+
+            //sp part, 4 terms:
+            if(b == d)
+               (*this)(S,i,j) += norm * spm(a,c);
+
+            if(a == d)
+               (*this)(S,i,j) += sign * norm * spm(b,c);
+
+            if(b == c)
+               (*this)(S,i,j) += sign * norm * spm(a,d);
+
+            if(a == c)
+               (*this)(S,i,j) += norm * spm(b,d);
+
+            //ph part:
+            for(int Z = 0;Z < 2;++Z)
+               (*this)(S,i,j) -= norm * (2.0 * Z + 1.0) * _6j[S][Z] * ( phm(Z,d,a,b,c) + sign * phm(Z,d,b,a,c) + sign * phm(Z,c,a,b,d) + phm(Z,c,b,a,d) );
+
+         }
+      }
+
+   }
+
+   this->symmetrize();
 
 }

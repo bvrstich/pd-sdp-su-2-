@@ -197,7 +197,7 @@ void SPM::bar(double scale,PPHM &pphm){
          //then S = 3/2 part:
          for(int l = 0;l < M/2;++l)
             for(int k = 0;k < M/2;++k)
-               (*this)(a,c) += 2.0 * pphm(1,1,l,k,a,1,l,k,a);
+               (*this)(a,c) += 2.0 * pphm(1,1,l,k,a,1,l,k,c);
 
          //scaling
          (*this)(a,c) *= scale;

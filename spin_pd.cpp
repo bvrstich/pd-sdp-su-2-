@@ -38,28 +38,9 @@ int main(void){
 
    cout.precision(10);
 
-   int M = 4;//dim sp hilbert space
-   int N = 2;//nr of particles
+   int M = 8;//dim sp hilbert space
+   int N = 4;//nr of particles
 
-   TPM tpm(M,N);
-
-   tpm.fill_Random();
-
-   tpm.uncouple("../pd_sdp-bright/tpm.in");
-
-   PPHM pphm(M,N);
-
-   pphm.T(tpm);
-
-   cout << pphm;
-
-   SPM bar(M,N);
-
-   bar.bar(0.5/(N - 1.0),pphm);
-
-   cout << bar;
-
-/*
    //hamiltoniaan
    TPM ham(M,N);
    ham.hubbard(1.0);
@@ -225,7 +206,7 @@ int main(void){
 
    //print density matrix to file
 //   (S.tpm(0)).out("workspace/input/rdm.in");
-*/
+
    return 0;
 
 }

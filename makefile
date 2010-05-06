@@ -97,6 +97,30 @@ PQGT1:
 	   echo; \
 	 fi
 
+PQGT2:
+	@echo
+	@echo '  +++ Building $(BINNAME) with P, Q ,G and T2 conditions active'
+	@echo	
+	$(MAKE) $(BRIGHT_ROOT)/$(BINNAME) DEFS="-DPQGT2"
+	@if test $?; then \
+	   echo; echo '*************** FAILED! ***************' ; echo; \
+	 else \
+	   echo; echo '  +++ $(BINNAME) has been built with P, Q, G and T2 conditions successfully!'; \
+	   echo; \
+	 fi
+
+PQGT:
+	@echo
+	@echo '  +++ Building $(BINNAME) with P, Q ,G, T1 and T2 conditions active'
+	@echo	
+	$(MAKE) $(BRIGHT_ROOT)/$(BINNAME) DEFS="-DPQGT"
+	@if test $?; then \
+	   echo; echo '*************** FAILED! ***************' ; echo; \
+	 else \
+	   echo; echo '  +++ $(BINNAME) has been built with P, Q, G, T1 and T2 conditions successfully!'; \
+	   echo; \
+	 fi
+
 # -----------------------------------------------------------------------------
 #   The default way to compile all source modules
 # -----------------------------------------------------------------------------

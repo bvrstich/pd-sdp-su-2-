@@ -45,6 +45,16 @@ SUP::SUP(int M,int N){
 
 #endif
 
+#ifdef __T2_CON
+
+   this->n_pph = M*M*(M - 1)/2;
+
+   SZ_pph = new PPHM(M,N);
+
+   dim += n_pph;
+
+#endif
+
 }
 
 /**
@@ -92,6 +102,18 @@ SUP::SUP(SUP &SZ_c){
 
 #endif
 
+#ifdef __T2_CON
+
+   this->n_pph = M*M*(M - 1)/2;
+
+   SZ_pph = new PPHM(M,N);
+
+   dim += n_pph;
+
+   *SZ_pph = *SZ_c.SZ_pph;
+
+#endif
+
 }
 
 /**
@@ -116,6 +138,12 @@ SUP::~SUP(){
 
 #endif
 
+#ifdef __T2_CON
+   
+   delete SZ_pph;
+
+#endif
+
 }
 
 /**
@@ -136,6 +164,12 @@ SUP &SUP::operator+=(SUP &SZ_pl){
 #ifdef __T1_CON
 
    (*SZ_dp) += (*SZ_pl.SZ_dp);
+
+#endif
+
+#ifdef __T2_CON
+
+   (*SZ_pph) += (*SZ_pl.SZ_pph);
 
 #endif
 
@@ -164,6 +198,12 @@ SUP &SUP::operator-=(SUP &SZ_pl){
 
 #endif
 
+#ifdef __T2_CON
+
+   (*SZ_pph) -= (*SZ_pl.SZ_pph);
+
+#endif
+
    return *this;
 
 }
@@ -186,6 +226,12 @@ SUP &SUP::operator=(SUP &SZ_c){
 #ifdef __T1_CON
 
    (*SZ_dp) = (*SZ_c.SZ_dp);
+
+#endif
+
+#ifdef __T2_CON
+
+   (*SZ_pph) = (*SZ_c.SZ_pph);
 
 #endif
 
@@ -212,6 +258,12 @@ SUP &SUP::operator=(double &a){
 #ifdef __T1_CON
 
    (*SZ_dp) = a;
+
+#endif
+
+#ifdef __T2_CON
+
+   (*SZ_pph) = a;
 
 #endif
 
@@ -255,6 +307,18 @@ DPM &SUP::dpm(){
 
 #endif
 
+#ifdef __T2_CON
+
+/**
+ * @return pointer to the PPHM block: SZ_pph
+ */
+PPHM &SUP::pphm(){
+
+   return *SZ_pph;
+
+}
+
+#endif
 
 /**
  * Initialization of the SUP matrix S, is just u^0: see primal_dual.pdf for more information
@@ -282,7 +346,14 @@ ostream &operator<<(ostream &output,SUP &SZ_p){
 #ifdef __T1_CON
 
    output << std::endl;
-   //output << (*SZ_p.SZ_dp);
+   output << (*SZ_p.SZ_dp);
+
+#endif
+
+#ifdef __T2_CON
+
+   output << std::endl;
+   output << (*SZ_p.SZ_pph);
 
 #endif
 
@@ -307,6 +378,12 @@ void SUP::fill_Random(){
 #ifdef __T1_CON
 
    SZ_dp->fill_Random();
+
+#endif
+
+#ifdef __T2_CON
+
+   SZ_pph->fill_Random();
 
 #endif
 
@@ -379,6 +456,19 @@ int SUP::gn_dp(){
 
 #endif
 
+#ifdef __T2_CON
+
+/**
+ * @return dimension of pph space
+ */
+int SUP::gn_pph(){
+
+   return n_pph;
+
+}
+
+#endif
+
 /**
  * @return total dimension of SUP (carrier) space
  */
@@ -411,6 +501,12 @@ double SUP::ddot(SUP &SZ_i){
 
 #endif
 
+#ifdef __T2_CON
+
+   ward += SZ_pph->ddot(*SZ_i.SZ_pph);
+
+#endif
+
    return ward;
 
 }
@@ -436,6 +532,12 @@ void SUP::invert(){
 
 #endif
 
+#ifdef __T2_CON
+   
+   SZ_pph->invert();
+
+#endif
+
 }
 
 /**
@@ -456,6 +558,12 @@ void SUP::dscal(double alpha){
 #ifdef __T1_CON
    
    SZ_dp->dscal(alpha);
+
+#endif
+
+#ifdef __T2_CON
+   
+   SZ_pph->dscal(alpha);
 
 #endif
 
@@ -564,6 +672,12 @@ void SUP::sqrt(int option){
 
 #endif
 
+#ifdef __T2_CON
+
+   SZ_pph->sqrt(option);
+
+#endif
+
 }
 
 /**
@@ -586,6 +700,12 @@ void SUP::L_map(SUP &map,SUP &object){
 #ifdef __T1_CON
 
    SZ_dp->L_map(map.dpm(),object.dpm());
+
+#endif
+
+#ifdef __T2_CON
+
+   SZ_pph->L_map(map.pphm(),object.pphm());
 
 #endif
 
@@ -613,6 +733,12 @@ void SUP::daxpy(double alpha,SUP &SZ_p){
 
 #endif
 
+#ifdef __T2_CON
+   
+   SZ_pph->daxpy(alpha,SZ_p.pphm());
+
+#endif
+
 }
 
 /**
@@ -634,6 +760,12 @@ double SUP::trace(){
 #ifdef __T1_CON
    
    ward += SZ_dp->trace();
+
+#endif
+
+#ifdef __T2_CON
+   
+   ward += SZ_pph->trace();
 
 #endif
 
@@ -681,6 +813,12 @@ SUP &SUP::mprod(SUP &A,SUP &B){
 
 #endif
 
+#ifdef __T2_CON
+
+   SZ_pph->mprod(A.pphm(),B.pphm());
+
+#endif
+
    return *this;
 
 }
@@ -706,6 +844,12 @@ void SUP::fill(TPM &tpm){
 
 #endif
 
+#ifdef __T2_CON
+   
+   SZ_pph->T(tpm);
+
+#endif
+
 }
 
 /**
@@ -725,6 +869,12 @@ void SUP::fill(){
 #ifdef __T1_CON
 
    SZ_dp->T(*SZ_tp[0]);
+
+#endif 
+
+#ifdef __T2_CON
+
+   SZ_pph->T(*SZ_tp[0]);
 
 #endif 
 
@@ -823,6 +973,14 @@ double SUP::U_norm(){
 
 #endif
 
+#ifdef __T2_CON
+
+   double t2 = (M - N)/(N - 1.0);
+
+   norm += t2* t2 * (M - 1.0)* M*M /2.0 + 2.0 * t2 * (M - 1.0)*M + M*(M - 1.0)*(M - 1.0);
+
+#endif
+
    return norm;
 
 }
@@ -849,6 +1007,13 @@ void SUP::proj_U_Tr(){
 
    //dan deze factor aftrekken met u^0
    SZ_dp->min_tunit(ward);
+
+#endif
+
+#ifdef __T2_CON
+
+   //dan deze factor aftrekken met u^0
+   SZ_pph->min_tunit(ward);
 
 #endif
 
@@ -883,6 +1048,14 @@ double SUP::U_trace(){
    double t1 = (M*(M - 1.0) - 3.0*N*(M - N))/(N*(N - 1.0));
 
    ward += t1*SZ_dp->trace();
+
+#endif
+
+#ifdef __T2_CON
+
+   double t2 = (M - N)/(N - 1.0);
+
+   ward += t2*SZ_pph->trace() + SZ_pph->skew_trace();
 
 #endif
 

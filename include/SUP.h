@@ -9,6 +9,7 @@ using std::ostream;
 #include "TPM.h"
 #include "PHM.h"
 #include "DPM.h"
+#include "PPHM.h"
 
 //definitions:
 #ifdef PQ
@@ -32,6 +33,23 @@ using std::ostream;
 
 #endif
 
+#ifdef PQGT2
+
+#define __Q_CON
+#define __G_CON
+#define __T2_CON
+
+#endif
+
+#ifdef PQGT
+
+#define __Q_CON
+#define __G_CON
+#define __T1_CON
+#define __T2_CON
+
+#endif
+
 class EIG;
 
 /**
@@ -47,9 +65,9 @@ class SUP{
    /**
     * Output stream operator overloaded, the usage is simple, if you want to print to a file, make an
     * ifstream object and type:\n\n
-    * object << SZ_p << endl;\n\n
+    * object << sup_p << endl;\n\n
     * For output onto the screen type: \n\n
-    * cout << SZ_p << endl;\n\n
+    * cout << sup_p << endl;\n\n
     * @param output The stream to which you are writing (e.g. cout)
     * @param SZ_p the SUP you want to print
     */
@@ -156,6 +174,14 @@ class SUP{
 
 #endif
 
+#ifdef __T2_CON
+
+      PPHM &pphm();
+
+      int gn_pph();
+
+#endif
+
    private:
 
       //!double pointer of TPM's, will contain the P and Q block of the SUP in the first and second block.
@@ -190,6 +216,16 @@ class SUP{
 
       //!dimension of three particle space
       int n_dp;
+
+#endif
+
+#ifdef __T2_CON
+
+      //!pointer tot he three particles matrix DPM
+      PPHM *SZ_pph;
+
+      //!dimension of three particle space
+      int n_pph;
 
 #endif
 

@@ -31,9 +31,26 @@ using std::ostream;
 
 #endif
 
+#ifdef PQGT2
+
+#define __Q_CON
+#define __G_CON
+#define __T2_CON
+
+#endif
+
+#ifdef PQGT
+
+#define __Q_CON
+#define __G_CON
+#define __T1_CON
+#define __T2_CON
+
+#endif
+
 /**
  * @author Brecht Verstichel
- * @date 20-04-2010\n\n
+ * @date 06-05-2010\n\n
  * This class, EIG is a "block"-vector over the carrierspace's of the active condtions. It contains room
  * to store the eigenvalues and special member function that work with these eigenvalues.
  * This class should only be used when a SUP matrix has been diagonalized, some functions could give strange results when the EIG object is filled
@@ -54,75 +71,88 @@ class EIG{
 
    public:
 
-      //constructor met initialisatie op 
-      EIG(SUP &);
-      
-      //copy constructor
-      EIG(EIG &);
+   //constructor met initialisatie op 
+   EIG(SUP &);
 
-      //destructor
-      ~EIG();
+   //copy constructor
+   EIG(EIG &);
 
-      void diagonalize(SUP &);
+   //destructor
+   ~EIG();
 
-      int gN();
+   void diagonalize(SUP &);
 
-      int gM();
+   int gN();
 
-      int gdim();
+   int gM();
 
-      double centerpot(double,EIG &,double,double);
+   int gdim();
 
-      //overload equality operator
-      EIG &operator=(EIG &);
+   double centerpot(double,EIG &,double,double);
 
-      BlockVector<TPM> &tpv(int);
+   //overload equality operator
+   EIG &operator=(EIG &);
+
+   BlockVector<TPM> &tpv(int);
 
 #ifdef __G_CON
 
-      BlockVector<PHM> &phv();
+   BlockVector<PHM> &phv();
 
 #endif
 
 #ifdef __T1_CON
-      
-      BlockVector<DPM> &dpv();
+
+   BlockVector<DPM> &dpv();
 
 #endif
 
-      double min();
+#ifdef __T2_CON
 
-      double max();
+   BlockVector<PPHM> &pphv();
 
-      double center_dev();
+#endif
+
+   double min();
+
+   double max();
+
+   double center_dev();
 
    private:
 
-      //!double pointer to a BlockVector<TPM> object, the eigenvalues of the P and Q part of a SUP matrix will be stored here.
-      BlockVector<TPM> **v_tp;
+   //!double pointer to a BlockVector<TPM> object, the eigenvalues of the P and Q part of a SUP matrix will be stored here.
+   BlockVector<TPM> **v_tp;
 
 #ifdef __G_CON
-      
-      //!single pointer to a BlockVector<PHM> object, the eigenvalues of G part of a SUP matrix will be stored here.
-      BlockVector<PHM> *v_ph;
+
+   //!single pointer to a BlockVector<PHM> object, the eigenvalues of G part of a SUP matrix will be stored here.
+   BlockVector<PHM> *v_ph;
 
 #endif
 
 #ifdef __T1_CON
-      
-      //!single pointer to a BlockVector<DPM> object, the eigenvalues of T1 part of a SUP matrix will be stored here.
-      BlockVector<DPM> *v_dp;
+
+   //!single pointer to a BlockVector<DPM> object, the eigenvalues of T1 part of a SUP matrix will be stored here.
+   BlockVector<DPM> *v_dp;
 
 #endif
 
-      //!number of particles
-      int N;
+#ifdef __T2_CON
 
-      //!dimension of sp space
-      int M;
+   //!single pointer to a BlockVector<PPHM> object, the eigenvalues of T2 part of a SUP matrix will be stored here.
+   BlockVector<PPHM> *v_pph;
 
-      //!total dimension of the EIG object
-      int dim;
+#endif
+
+   //!number of particles
+   int N;
+
+   //!dimension of sp space
+   int M;
+
+   //!total dimension of the EIG object
+   int dim;
 
 };
 
