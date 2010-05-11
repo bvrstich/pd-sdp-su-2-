@@ -7,7 +7,6 @@
  * @author Brecht Verstichel
  * @date 14-04-2010
  */
-
 #include <iostream>
 #include <fstream>
 #include <time.h>
@@ -43,6 +42,7 @@ int main(void){
 
    //hamiltoniaan
    TPM ham(M,N);
+
    ham.hubbard(1.0);
 
    SUP S(M,N);
@@ -147,7 +147,7 @@ int main(void){
       else{
 
          //zoek de ideale afstand (geef ook een waarde mee voor de maximale afwijking van het centraal pad):
-         a = DS.line_search(DZ,S,Z,5.0);
+         a = DS.line_search(DZ,S,Z,2.0);
 
          S.daxpy(a,DS);
          Z.daxpy(a,DZ);
@@ -203,6 +203,7 @@ int main(void){
    cout << endl;
    cout << "E_0 = " << energy << " with accuracy of " << pd_gap << " and a deviation from centrality of " << center_dev << endl;
    cout << endl;
+   cout << "<S^2>\t=\t" << S.tpm(0).spin() << endl;
 
    //print density matrix to file
 //   (S.tpm(0)).out("workspace/input/rdm.in");

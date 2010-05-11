@@ -44,6 +44,8 @@ class TPM : public BlockMatrix {
       //destructor
       virtual ~TPM();
 
+      void constr_lists();
+
       using BlockMatrix::operator=;
 
       using BlockMatrix::operator();
@@ -103,12 +105,15 @@ class TPM : public BlockMatrix {
       //T2 down
       void T(PPHM &);
 
+      //return the spin
+      double spin();
+
    private:
 
       //!static list of dimension [2][dim[i]][2] that takes in a tp index i and a spinquantumnumber S, and returns two sp indices: a = t2s[S][i][0] and b = t2s[S][i][1]
       static int ***t2s;
 
-      //!static list of dimension [M][M] that takes two sp indices a,b and a spinquantumnumber S, and returns a tp index i: i = s2t[S][a][b]
+      //!static list of dimension [2][M/2][M/2] that takes two sp indices a,b and a spinquantumnumber S, and returns a tp index i: i = s2t[S][a][b]
       static int ***s2t;
 
       //!list of 6j symbols needed.

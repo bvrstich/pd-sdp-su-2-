@@ -32,7 +32,7 @@ DPM::DPM(int M,int N) : BlockMatrix(2) {
    this->setMatrixDim(1,M/2*(M/2 - 1)*(M/2 - 2)/6,4);
 
    if(counter == 0)//make the lists
-      this->construct_lists();
+      construct_lists();
 
    ++counter;
 
@@ -49,7 +49,7 @@ DPM::DPM(DPM &dpm_c) : BlockMatrix(dpm_c) {
    this->M = dpm_c.gM();
 
    if(counter == 0)
-      this->construct_lists();
+      construct_lists();
 
    ++counter;
 

@@ -32,7 +32,7 @@ PPHM::PPHM(int M,int N) : BlockMatrix(2) {
    this->setMatrixDim(1,M*M*(M - 2)/16,4);//S=3/2 block
 
    if(counter == 0)//make the lists
-      this->construct_lists();
+      construct_lists();
 
    ++counter;
 
@@ -49,7 +49,7 @@ PPHM::PPHM(PPHM &pphm_c) : BlockMatrix(pphm_c) {
    this->M = pphm_c.gM();
 
    if(counter == 0)
-      this->construct_lists();
+      construct_lists();
 
    ++counter;
 

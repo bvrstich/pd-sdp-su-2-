@@ -39,6 +39,8 @@ class PHM : public BlockMatrix {
       //destructor
       virtual ~PHM();
 
+      void constr_lists();
+
       using BlockMatrix::operator=;
 
       using BlockMatrix::operator();
@@ -71,7 +73,7 @@ class PHM : public BlockMatrix {
       //!static list of dimension [n_ph][2] that takes in a ph index i and returns two sp indices: a = ph2s[i][0] and b = ph2s[i][1]
       static int **ph2s;
 
-      //!static list of dimension [M/2][M/2] that takes two sp indices a,b and returns a ph index i: i = s2t[a][b]
+      //!static list of dimension [M/2][M/2] that takes two sp indices a,b and returns a ph index i: i = s2ph[a][b]
       static int **s2ph;
 
       //!list of 6j symbols needed.

@@ -32,84 +32,8 @@ TPM::TPM(int M,int N) : BlockMatrix(2) {
    this->setMatrixDim(0,M*(M + 2)/8,1);
    this->setMatrixDim(1,M*(M - 2)/8,3);
 
-   if(counter == 0){
-
-      //allocatie van s2t
-      s2t = new int ** [2];
-
-      for(int i = 0;i < 2;++i){
-
-         s2t[i] = new int * [M/2];
-         s2t[i][0] = new int [M*M/4];
-
-         for(int j = 1;j < M/2;++j)
-            s2t[i][j] = s2t[i][j - 1] + M/2;
-
-      }
-
-      //allocatie van t2s
-      t2s = new int ** [2];
-
-      for(int i = 0;i < 2;++i){
-
-         t2s[i] = new int * [this->gdim(i)];
-
-         for(int j = 0;j < this->gdim(i);++j)
-            t2s[i][j] = new int [2];
-
-      }
-
-      //initialisatie van de arrays
-      int teller = 0;
-
-      //symmetrical array: S = 0
-      for(int a = 0;a < M/2;++a)
-         for(int b = a;b < M/2;++b){
-
-            s2t[0][a][b] = teller;
-
-            t2s[0][teller][0] = a;
-            t2s[0][teller][1] = b;
-
-            ++teller;
-
-         }
-
-      //watch it!
-      teller = 0;
-
-      //antisymmetrical array: S = 1
-      for(int a = 0;a < M/2;++a)
-         for(int b = a + 1;b < M/2;++b){
-
-            s2t[1][a][b] = teller;
-
-            t2s[1][teller][0] = a;
-            t2s[1][teller][1] = b;
-
-            ++teller;
-
-         }
-
-      //symmetrize the lists dude!
-      for(int S = 0;S < 2;++S)
-         for(int i = 0;i < M/2;++i)
-            for(int j = i + 1;j < M/2;++j)
-               s2t[S][j][i] = s2t[S][i][j];
-
-      //allocate
-      _6j = new double * [2];
-
-      for(int S = 0;S < 2;++S)
-         _6j[S] = new double [2];
-
-      //initialize
-      _6j[0][0] = -0.5;
-      _6j[0][1] = 0.5;
-      _6j[1][0] = 0.5;
-      _6j[1][1] = 1.0/6.0;
-
-   }
+   if(counter == 0)
+      constr_lists();
 
    ++counter;
 
@@ -125,84 +49,8 @@ TPM::TPM(TPM &tpm_c) : BlockMatrix(tpm_c){
    this->N = tpm_c.gN();
    this->M = tpm_c.gM();
 
-   if(counter == 0){
-
-      //allocatie van s2t
-      s2t = new int ** [2];
-
-      for(int i = 0;i < 2;++i){
-
-         s2t[i] = new int * [M/2];
-         s2t[i][0] = new int [M*M/4];
-
-         for(int j = 1;j < M/2;++j)
-            s2t[i][j] = s2t[i][j - 1] + M/2;
-
-      }
-
-      //allocatie van t2s
-      t2s = new int ** [2];
-
-      for(int i = 0;i < 2;++i){
-
-         t2s[i] = new int * [this->gdim(i)];
-
-         for(int j = 0;j < this->gdim(i);++j)
-            t2s[i][j] = new int [2];
-
-      }
-
-      //initialisatie van de arrays
-      int teller = 0;
-
-      //symmetrical array: S = 0
-      for(int a = 0;a < M/2;++a)
-         for(int b = a;b < M/2;++b){
-
-            s2t[0][a][b] = teller;
-
-            t2s[0][teller][0] = a;
-            t2s[0][teller][1] = b;
-
-            ++teller;
-
-         }
-
-      //watch it!
-      teller = 0;
-
-      //antisymmetrical array: S = 1
-      for(int a = 0;a < M/2;++a)
-         for(int b = a + 1;b < M/2;++b){
-
-            s2t[1][a][b] = teller;
-
-            t2s[1][teller][0] = a;
-            t2s[1][teller][1] = b;
-
-            ++teller;
-
-         }
-
-      //symmetrize the lists dude!
-      for(int S = 0;S < 2;++S)
-         for(int i = 0;i < M/2;++i)
-            for(int j = i + 1;j < M/2;++j)
-               s2t[S][j][i] = s2t[S][i][j];
-
-      //allocate
-      _6j = new double * [2];
-
-      for(int S = 0;S < 2;++S)
-         _6j[S] = new double [2];
-
-      //initialize
-      _6j[0][0] = -0.5;
-      _6j[0][1] = 0.5;
-      _6j[1][0] = 0.5;
-      _6j[1][1] = 1.0/6.0;
-
-   }
+   if(counter == 0)
+      constr_lists();
 
    ++counter;
 
@@ -242,6 +90,88 @@ TPM::~TPM(){
 }
 
 /**
+ * allocate and fill all the lists needed for this class.
+ */
+void TPM::constr_lists(){
+
+   //allocatie van s2t
+   s2t = new int ** [2];
+
+   for(int i = 0;i < 2;++i){
+
+      s2t[i] = new int * [M/2];
+      s2t[i][0] = new int [M*M/4];
+
+      for(int j = 1;j < M/2;++j)
+         s2t[i][j] = s2t[i][j - 1] + M/2;
+
+   }
+
+   //allocatie van t2s
+   t2s = new int ** [2];
+
+   for(int i = 0;i < 2;++i){
+
+      t2s[i] = new int * [this->gdim(i)];
+
+      for(int j = 0;j < this->gdim(i);++j)
+         t2s[i][j] = new int [2];
+
+   }
+
+   //initialisatie van de arrays
+   int teller = 0;
+
+   //symmetrical array: S = 0
+   for(int a = 0;a < M/2;++a)
+      for(int b = a;b < M/2;++b){
+
+         s2t[0][a][b] = teller;
+
+         t2s[0][teller][0] = a;
+         t2s[0][teller][1] = b;
+
+         ++teller;
+
+      }
+
+   //watch it!
+   teller = 0;
+
+   //antisymmetrical array: S = 1
+   for(int a = 0;a < M/2;++a)
+      for(int b = a + 1;b < M/2;++b){
+
+         s2t[1][a][b] = teller;
+
+         t2s[1][teller][0] = a;
+         t2s[1][teller][1] = b;
+
+         ++teller;
+
+      }
+
+   //symmetrize the lists dude!
+   for(int S = 0;S < 2;++S)
+      for(int i = 0;i < M/2;++i)
+         for(int j = i + 1;j < M/2;++j)
+            s2t[S][j][i] = s2t[S][i][j];
+
+   //allocate
+   _6j = new double * [2];
+
+   for(int S = 0;S < 2;++S)
+      _6j[S] = new double [2];
+
+   //initialize
+   _6j[0][0] = -0.5;
+   _6j[0][1] = 0.5;
+   _6j[1][0] = 0.5;
+   _6j[1][1] = 1.0/6.0;
+
+}
+
+/**
  * access the elements of the the blocks in sp mode, the symmetry or antisymmetry of the blocks is automatically accounted for:\n\n
  * Antisymmetrical for S = 1, symmetrical in the sp orbitals for S = 0\n\n
  * @param S The spinquantumnumber that identifies the block
@@ -249,7 +179,7 @@ TPM::~TPM(){
  * @param b second sp index that forms the tp row index i of spin S, together with a
  * @param c first sp index that forms the tp column index j of spin S, together with d
  * @param d second sp index that forms the tp column index j of spin S, together with c
- * @return the number on place TPM(i,j) with the right phase.
+ * @return the number on place TPM(B,i,j) with the right phase.
  */
 double TPM::operator()(int S,int a,int b,int c,int d) const{
 
@@ -1169,5 +1099,22 @@ void TPM::T(PPHM &pphm){
    }
 
    this->symmetrize();
+
+}
+
+/**
+ * @return The expectation value of the total spin for the TPM.
+ */
+double TPM::spin(){
+
+   double ward = 0.0;
+
+   for(int i = 0;i < this->gdim(0);++i)
+      ward += -1.5 * (N - 2.0)/(N - 1.0) * (*this)(0,i,i);
+
+   for(int i = 0;i < this->gdim(1);++i)
+      ward += 3.0 * ( -1.5 * (N - 2.0)/(N - 1.0) + 2.0 ) * (*this)(1,i,i);
+
+   return ward;
 
 }

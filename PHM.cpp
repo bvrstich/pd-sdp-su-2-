@@ -31,48 +31,8 @@ PHM::PHM(int M,int N) : BlockMatrix(2) {
    this->setMatrixDim(0,M*M/4,1);
    this->setMatrixDim(1,M*M/4,3);
 
-   if(counter == 0){
-
-      s2ph = new int * [M/2];
-      s2ph[0] = new int [M*M/4];
-
-      for(int i = 1;i < M/2;++i)
-         s2ph[i] = s2ph[i - 1] + M/2;
-
-      //allocation of ph2s
-      ph2s = new int * [M*M/4];
-
-      for(int i = 0;i < M*M/4;++i)
-         ph2s[i] = new int [2];
-
-      //initialisation of the two arrays
-      int teller = 0;
-
-      for(int a = 0;a < M/2;++a)
-         for(int b = 0;b < M/2;++b){
-
-            s2ph[a][b] = teller;
-
-            ph2s[teller][0] = a;
-            ph2s[teller][1] = b;
-
-            ++teller;
-
-         }
-
-      //allocate
-      _6j = new double * [2];
-
-      for(int S = 0;S < 2;++S)
-         _6j[S] = new double [2];
-      
-      //initialize
-      _6j[0][0] = -0.5;
-      _6j[0][1] = 0.5;
-      _6j[1][0] = 0.5;
-      _6j[1][1] = 1.0/6.0;
-
-   }
+   if(counter == 0)
+      constr_lists();
 
    ++counter;
 
@@ -88,48 +48,8 @@ PHM::PHM(PHM &phm_c) : BlockMatrix(phm_c){
    this->N = phm_c.gN();
    this->M = phm_c.gM();
 
-   if(counter == 0){
-
-      s2ph = new int * [M/2];
-      s2ph[0] = new int [M*M/4];
-
-      for(int i = 1;i < M/2;++i)
-         s2ph[i] = s2ph[i - 1] + M/2;
-
-      //allocation of ph2s
-      ph2s = new int * [M*M/4];
-
-      for(int i = 0;i < M*M/4;++i)
-         ph2s[i] = new int [2];
-
-      //initialisation of the two arrays
-      int teller = 0;
-
-      for(int a = 0;a < M/2;++a)
-         for(int b = 0;b < M/2;++b){
-
-            s2ph[a][b] = teller;
-
-            ph2s[teller][0] = a;
-            ph2s[teller][1] = b;
-
-            ++teller;
-
-         }
-
-      //allocate
-      _6j = new double * [2];
-
-      for(int S = 0;S < 2;++S)
-         _6j[S] = new double [2];
-      
-      //initialize
-      _6j[0][0] = -0.5;
-      _6j[0][1] = 0.5;
-      _6j[1][0] = 0.5;
-      _6j[1][1] = 1.0/6.0;
-
-   }
+   if(counter == 0)
+      constr_lists();
 
    ++counter;
 
@@ -162,13 +82,59 @@ PHM::~PHM(){
 }
 
 /**
+ * Allocate and fill the lists needed in this class
+ */
+void PHM::constr_lists(){
+
+   s2ph = new int * [M/2];
+   s2ph[0] = new int [M*M/4];
+
+   for(int i = 1;i < M/2;++i)
+      s2ph[i] = s2ph[i - 1] + M/2;
+
+   //allocation of ph2s
+   ph2s = new int * [M*M/4];
+
+   for(int i = 0;i < M*M/4;++i)
+      ph2s[i] = new int [2];
+
+   //initialisation of the two arrays
+   int teller = 0;
+
+   for(int a = 0;a < M/2;++a)
+      for(int b = 0;b < M/2;++b){
+
+         s2ph[a][b] = teller;
+
+         ph2s[teller][0] = a;
+         ph2s[teller][1] = b;
+
+         ++teller;
+
+      }
+
+   //allocate
+   _6j = new double * [2];
+
+   for(int S = 0;S < 2;++S)
+      _6j[S] = new double [2];
+
+   //initialize
+   _6j[0][0] = -0.5;
+   _6j[0][1] = 0.5;
+   _6j[1][0] = 0.5;
+   _6j[1][1] = 1.0/6.0;
+
+}
+
+/**
  * access the elements of the matrix in sp mode, 
  * @param S The spin of the block you want to access
  * @param a first sp index that forms the ph row index i in block S together with b
  * @param b second sp index that forms the ph row index i in block S together with a
  * @param c first sp index that forms the ph column index j in block S together with d
  * @param d second sp index that forms the ph column index j in block S together with c
- * @return the number on place PHM(i,j)
+ * @return the number on place PHM(S,i,j)
  */
 double &PHM::operator()(int S,int a,int b,int c,int d){
 
@@ -189,7 +155,7 @@ ostream &operator<<(ostream &output,PHM &phm_p){
       for(int i = 0;i < phm_p.gdim(S);++i)
          for(int j = 0;j < phm_p.gdim(S);++j){
 
-            output << S << "\t" << i << "\t" << j << "\t|\t" << phm_p.ph2s[i][0] << "\t" << phm_p.ph2s[i][1]
+            output << i << "\t" << j << "\t|\t" << phm_p.ph2s[i][0] << "\t" << phm_p.ph2s[i][1]
 
                << "\t" << phm_p.ph2s[j][0] << "\t" << phm_p.ph2s[j][1] << "\t" << phm_p(S,i,j) << endl;
 
@@ -222,7 +188,7 @@ int PHM::gM(){
 }
 
 /**
- * De G map, maps a TPM object on a PHM object.
+ * The G map, maps a TPM object on a PHM object.
  * @param tpm input TPM
  */
 void PHM::G(TPM &tpm){
