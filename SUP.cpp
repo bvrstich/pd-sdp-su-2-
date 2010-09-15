@@ -321,13 +321,17 @@ PPHM &SUP::pphm(){
 #endif
 
 /**
- * Initialization of the SUP matrix S, is just u^0: see primal_dual.pdf for more information
+ * Initialization of the SUP matrix S, is just u^0 for now: see primal_dual.pdf for more information
+ * @param lineq the object containing the linear equality constraints
  */
-void SUP::init_S(){
+void SUP::init_S(const Lineq &lineq){
 
-   (*SZ_tp[0]).init();
+   *this = lineq.gu_0(0);
 
-   this->fill();
+   this->dscal(lineq.ge_ortho(0));
+
+   for(int i = 1;i < lineq.gnr();++i)
+      this->daxpy(lineq.ge_ortho(i),lineq.gu_0(i));
 
 }
 

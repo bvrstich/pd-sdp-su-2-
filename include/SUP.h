@@ -100,7 +100,7 @@ class SUP{
       TPM &tpm(int i);
 
       //initialiseer S
-      void init_S();
+      void init_S(const Lineq &);
 
       //initialiseer Z
       void init_Z(double alpha,TPM &ham,const Lineq &);
