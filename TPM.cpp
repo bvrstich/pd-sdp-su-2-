@@ -424,7 +424,7 @@ void TPM::Q(int option,double A,double B,double C,TPM &tpm_d){
 /**
  * initialize this onto the unitmatrix with trace N*(N - 1)/2
  */
-void TPM::unit(){
+void TPM::init(){
 
    double ward = N*(N - 1.0)/(M*(M - 1.0));
 
@@ -439,6 +439,33 @@ void TPM::unit(){
 
       }
    }
+
+}
+
+/**
+ * set the matrix to the unitmatrix
+ */
+void TPM::set_unit(){
+
+   for(int S = 0;S < 2;++S){
+
+      for(int i = 0;i < gdim(S);++i){
+
+         (*this)(S,i,i) = 1.0;
+
+         for(int j = i + 1;j < gdim(S);++j)
+            (*this)(S,i,j) = (*this)(S,j,i) = 0.0;
+
+      }
+
+   }
+
+}
+
+/**
+ * fill the TPM object with the S^2 matrix
+ */
+void TPM::set_S_2(){
 
 }
 
@@ -1089,7 +1116,6 @@ void TPM::T(PPHM &pphm){
             if(a == c)
                (*this)(S,i,j) += norm * spm(b,d);
 
-            //ph part:
             for(int Z = 0;Z < 2;++Z)
                (*this)(S,i,j) -= norm * (2.0 * Z + 1.0) * _6j[S][Z] * ( phm(Z,d,a,b,c) + sign * phm(Z,d,b,a,c) + sign * phm(Z,c,a,b,d) + phm(Z,c,b,a,d) );
 
@@ -1116,5 +1142,35 @@ double TPM::spin(){
       ward += 3.0 * ( -1.5 * (N - 2.0)/(N - 1.0) + 2.0 ) * (*this)(1,i,i);
 
    return ward;
+
+}
+
+/**
+ * Input from file, with sp indices as row and column indices
+ * @param filename Name of the inputfile
+ */
+void TPM::in_sp(const char *filename){
+
+   ifstream input(filename);
+
+   int a,b,c,d;
+   int S;
+
+   double value;
+
+   int i,j;
+
+   (*this) = 0;
+
+   while(input >> S >> a >> b >> c >> d >> value){
+
+      i = s2t[S][a][b];
+      j = s2t[S][c][d];
+
+      (*this)(S,i,j) = value;
+
+   }
+
+   this->symmetrize();
 
 }

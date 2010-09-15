@@ -65,6 +65,9 @@ class PHM : public BlockMatrix {
       //trace the first pair of indices of a PPHM object
       void bar(PPHM &);
 
+      //input PHM from file
+      void in_sp(const char *);
+
    private:
 
       //!static counter that counts the number of PHM objects running in the program

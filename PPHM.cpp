@@ -5,6 +5,7 @@
 
 using std::ostream;
 using std::ofstream;
+using std::ifstream;
 using std::endl;
 
 #include "include.h"
@@ -839,5 +840,46 @@ ostream &operator<<(ostream &output,PPHM &pphm_p){
    }
 
    return output;
+
+}
+
+/**
+ * Input from file, with sp indices as row and column indices
+ * @param filename Name of the inputfile
+ */
+void PPHM::in_sp(const char *filename){
+
+   ifstream input(filename);
+
+   int S_ab,S_de;
+   int a,b,c,d,e,z;
+   int S;
+
+   double value;
+
+   int i,j;
+
+   (*this) = 0;
+
+   while(input >> S >> S_ab >> a >> b >> c >> S_de >> d >> e >> z >> value){
+
+      if(S == 0){
+
+         i = s2pph[S][S_ab][a][b][(-c + M/2)%(M/2)];
+         j = s2pph[S][S_de][d][e][(-z + M/2)%(M/2)];
+
+      }
+      else{
+
+         i = s2pph[S][0][a][b][(-c + M/2)%(M/2)];
+         j = s2pph[S][0][d][e][(-z + M/2)%(M/2)];
+
+      }
+
+      (*this)(S,i,j) = value;
+
+   }
+
+   this->symmetrize();
 
 }

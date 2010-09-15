@@ -5,6 +5,7 @@
 
 using std::ostream;
 using std::ofstream;
+using std::ifstream;
 using std::endl;
 
 #include "include.h"
@@ -394,5 +395,35 @@ void PHM::uncouple(const char *filename){
             }
 
       }
+
+}
+
+/**
+ * Input from file, with sp indices as row and column indices
+ * @param filename Name of the inputfile
+ */
+void PHM::in_sp(const char *filename){
+
+   ifstream input(filename);
+
+   int a,b,c,d;
+   int S;
+
+   double value;
+
+   int i,j;
+
+   (*this) = 0;
+
+   while(input >> S >> a >> b >> c >> d >> value){
+
+      i = s2ph[a][b];
+      j = s2ph[c][d];
+
+      (*this)(S,i,j) = value;
+
+   }
+
+   this->symmetrize();
 
 }

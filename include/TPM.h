@@ -70,7 +70,11 @@ class TPM : public BlockMatrix {
       //overlapmatrix afbeelding en zijn inverse
       void S(int option,TPM &);
 
-      void unit();
+      void init();
+
+      void set_unit();
+
+      void set_S_2();
 
       void proj_Tr();
 
@@ -107,6 +111,10 @@ class TPM : public BlockMatrix {
 
       //return the spin
       double spin();
+
+      //input TPM from file
+      void in_sp(const char *);
+
 
    private:
 

@@ -47,7 +47,7 @@ class DPM : public BlockMatrix {
       //easy to access the numbers, in sp mode
       double operator()(int S,int S_ab,int a,int b,int c,int S_de,int d,int e,int f) const;
 
-      static int get_inco(int S,int S_ab,int a,int b,int c,int *i,double *coef);
+      int get_inco(int S,int S_ab,int a,int b,int c,int *i,double *coef) const;
 
       //geef N terug
       int gN();
@@ -67,8 +67,8 @@ class DPM : public BlockMatrix {
       //deduct scale times T1(1) matrix
       void min_tunit(double scale);
 
-      //print the uncoupled version of the dpm
-      void uncouple(const char *);
+      //input DPM from file
+      void in_sp(const char *);
 
    private:
 

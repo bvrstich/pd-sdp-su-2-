@@ -325,7 +325,7 @@ PPHM &SUP::pphm(){
  */
 void SUP::init_S(){
 
-   (*SZ_tp[0]).unit();
+   (*SZ_tp[0]).init();
 
    this->fill();
 

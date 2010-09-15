@@ -62,12 +62,15 @@ class PPHM : public BlockMatrix {
 
       double skew_trace();
 
+      //input PPHM from file
+      void in_sp(const char *);
+
    private:
 
       //!static counter that counts the number of PPHM objects running in the program
       static int counter;
 
-      //!static list of dimension [2][dim[i]][3] that takes in a pph index i and a blockindex for spin, and returns three sp indices: a = pph2s[S][i][1], b = pph2s[S][i][2] and c = pph2s[S][i][3] and an intermediate spin S_ab = pph2s[S][i][0]
+      //!static list of dimension [2][dim[i]][4] that takes in a pph index i and a blockindex for spin, and returns three sp indices: a = pph2s[S][i][1], b = pph2s[S][i][2] and c = pph2s[S][i][3] and an intermediate spin S_ab = pph2s[S][i][0]
       static int ***pph2s;
 
       //!static list of dimension [2][2][M/2][M/2][M/2] that takes three sp indices a,b and c, a blockindex S for total spin, and an intermediate spinindex S_ab, and returns a pph index i: i = s2pph[S][S_ab][a][b][c]

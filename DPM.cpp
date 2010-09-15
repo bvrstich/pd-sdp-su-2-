@@ -5,6 +5,7 @@
 
 using std::ostream;
 using std::ofstream;
+using std::ifstream;
 using std::endl;
 
 #include "include.h"
@@ -363,7 +364,7 @@ double DPM::operator()(int S,int S_ab,int a,int b,int c,int S_de,int d,int e,int
  * @param coef pointer of dim 1 or 2 containing the coefficients occuring in the expansion.
  * @return the number of terms in the expansion (1 or 2), also the dim of pointers i and coef. When zero is returned this is not a valid element.
  */
-int DPM::get_inco(int S,int S_ab,int a,int b,int c,int *i,double *coef){
+int DPM::get_inco(int S,int S_ab,int a,int b,int c,int *i,double *coef) const{
 
    //they cannot all be equal
    if(a == b && b == c)
@@ -976,152 +977,42 @@ ostream &operator<<(ostream &output,DPM &dpm_p){
 }
 
 /**
- * Print the uncoupled version of the DPM. Really only needed for debugging purposes, so can be inefficient.
+ * Input from file, with sp indices as row and column indices
+ * @param filename Name of the inputfile
  */
-void DPM::uncouple(const char *filename){
+void DPM::in_sp(const char *filename){
 
-   ofstream output(filename);
+   ifstream input(filename);
 
-   output.precision(10);
-
-   //first make table of cg-coefs needed:
-   double cg[2][3][2][4][4];
-
-   //init
-   for(int i = 0;i < 2;++i)
-      for(int j = 0;j < 3;++j)
-         for(int k = 0;k < 2;++k)
-            for(int l = 0;l < 4;++l)
-               for(int m = 0;m < 4;++m)
-                  cg[i][j][k][l][m] = 0.0;
-
-   //(1/2 +1/2 1/2 -/1/2 | 0 0)
-   cg[0][1][0][0][1] = 1.0/std::sqrt(2.0);
-
-   //(1/2 -1/2 1/2 +/1/2 | 0 0)
-   cg[0][0][1][0][1] = -1.0/std::sqrt(2.0);
-
-   //(1/2 +1/2 1/2 -/1/2 | 1 0)
-   cg[0][1][0][2][1] = 1.0/std::sqrt(2.0);
-
-   //(1/2 -1/2 1/2 +/1/2 | 1 0)
-   cg[0][0][1][2][1] = 1.0/std::sqrt(2.0);
-
-   //(1/2 +1/2 1/2 +1/2 | 1 +1)
-   cg[0][1][1][2][2] = 1.0;
-
-   //(1/2 -1/2 1/2 -1/2 | 1 -1)
-   cg[0][0][0][2][0] = 1.0;
-
-   //(1 +1 1/2 +1/2 | 3/2 + 3/2)
-   cg[1][2][1][3][3] = 1.0;
-
-   //(1 -1 1/2 -1/2 | 3/2 - 3/2)
-   cg[1][0][0][3][0] = 1.0;
-
-   //(1 +1 1/2 -1/2 | 3/2 +1/2) and (1 -1 1/2 +1/2 | 3/2 -1/2)
-   cg[1][2][0][3][2] = cg[1][0][1][3][1] = 1.0/std::sqrt(3.0);
-
-   //(1 +1 1/2 -1/2 | 3/2 +1/2) and (1 -1 1/2 +1/2 | 3/2 -1/2)
-   cg[1][2][0][3][2] = cg[1][0][1][3][1] = 1.0/std::sqrt(3.0);
-
-   //(1 0 1/2 +1/2 | 3/2 +1/2 ) and (1 0 1/2 -1/2 | 3/2 -1/2)
-   cg[1][1][1][3][2] = cg[1][1][0][3][1] = std::sqrt(2.0/3.0);
-
-   //(1 +1 1/2 -1/2 | 1/2 +1/2) and (1 -1 1/2 +1/2 | 1/2 -1/2)
-   cg[1][2][0][1][2] = cg[1][0][1][1][1] = std::sqrt(2.0/3.0);
-
-   //(1 0 1/2 +1/2 | 1/2 +1/2) and (1 0 1/2 -1/2 | 1/2 -1/2)
-   cg[1][1][1][1][2] = cg[1][1][0][1][1] = -1.0/std::sqrt(3.0);
-
+   int S_ab,S_de;
    int a,b,c,d,e,z;
-   int s_a,s_b,s_c,s_d,s_e,s_z;
+   int S;
 
-   int M_ab,M_de;
-   int M_abc,M_dez;
+   double value;
 
-   double ward;
+   int i,j;
 
-   //three row indices of the DPM
-   for(int alpha = 0;alpha < M;++alpha)
-      for(int beta = alpha + 1;beta < M;++beta)
-         for(int gamma = beta + 1;gamma < M;++gamma){
+   (*this) = 0;
 
-            //watch it now, 0 is down, 1 is up.
-            a = alpha/2;
-            s_a = alpha%2;
+   while(input >> S >> S_ab >> a >> b >> c >> S_de >> d >> e >> z >> value){
 
-            b = beta/2;
-            s_b = beta%2;
+      if(S == 0){
 
-            c = gamma/2;
-            s_c = gamma%2;
+         i = s2dp[S][S_ab][a][b][c];
+         j = s2dp[S][S_de][d][e][z];
 
-            M_ab = s_a + s_b;
-            M_abc = M_ab + s_c;
+      }
+      else{
 
-            //and the three column indices of the DPM
-            for(int delta = alpha;delta < M;++delta)
-               for(int epsilon = delta + 1;epsilon < M;++epsilon)
-                  for(int zeta = epsilon + 1;zeta < M;++zeta){
+         i = s2dp[S][0][a][b][c];
+         j = s2dp[S][0][d][e][z];
 
-                     d = delta/2;
-                     s_d = delta%2;
+      }
 
-                     e = epsilon/2;
-                     s_e = epsilon%2;
+      (*this)(S,i,j) = value;
 
-                     z = zeta/2;
-                     s_z = zeta%2;
+   }
 
-                     M_de = s_d + s_e;
-                     M_dez = M_de + s_z;
-
-                     ward = 0.0;
-
-                     //all can go through
-                     if(M_abc == M_dez){
-
-                        //for S = 1/2
-                        if(M_abc != 0 && M_abc != 3){//if M = -3/2 or 3/2, then the S = 1/2 term is not there
-
-                           //4 terms left: S_ab and S_de = 0 or 1 
-
-                           //first S_ab == 0 and S_de == 0
-                           if(M_ab == 1 && M_de == 1)//only contribution from the M_ab == M_de == 0 term (0 == 1 here because -1/2 == 0 and +1/2 == 1)
-                              ward += cg[0][s_a][s_b][0][1] * cg[0][s_d][s_e][0][1] * (*this)(0,0,a,b,c,0,d,e,z);
-
-                           //S_ab == 0 and S_de == 1
-                           if(M_ab == 1)//no limit on M_de this time
-                              ward += cg[0][s_a][s_b][0][1] * cg[0][s_d][s_e][2][M_de] * cg[1][M_de][s_z][1][M_dez] * (*this)(0,0,a,b,c,1,d,e,z);
-
-                           //S_ab == 1 and S_de == 0
-                           if(M_de == 1)//no limit on M_ab this time
-                              ward += cg[0][s_a][s_b][2][M_ab] * cg[1][M_ab][s_c][1][M_abc] * cg[0][s_d][s_e][0][1] * (*this)(0,1,a,b,c,0,d,e,z);
-
-                           //S_ab == 1 and S_de == 1, no constraints
-                           ward += cg[0][s_a][s_b][2][M_ab] * cg[1][M_ab][s_c][1][M_abc] * cg[0][s_d][s_e][2][M_de] * cg[1][M_de][s_z][1][M_dez] 
-
-                              * (*this)(0,1,a,b,c,1,d,e,z);
-
-                        }
-
-                        //for S = 3/2: no constraints, but only the S_ab = S_de = 1 term will contribute
-                        ward += cg[0][s_a][s_b][2][M_ab] * cg[1][M_ab][s_c][3][M_abc] * cg[0][s_d][s_e][2][M_de] * cg[1][M_de][s_z][3][M_dez] * (*this)(1,1,a,b,c,1,d,e,z);
-
-                        //norms:
-                        if(a == b)
-                           ward *= std::sqrt(2.0);
-
-                        if(d == e)
-                           ward *= std::sqrt(2.0);
-
-                     }
-
-                     output << alpha << "\t" << beta << "\t" << gamma << "\t" << delta << "\t" << epsilon << "\t" << zeta << "\t" << ward << endl;
-
-                  }
-
-         }
+   this->symmetrize();
 
 }
