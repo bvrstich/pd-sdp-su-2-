@@ -19,6 +19,7 @@ CPPSRC	= spin_pd.cpp\
             PPHM.cpp\
             SUP.cpp\
             EIG.cpp\
+            Lineq.cpp
 
 OBJ	= $(CPPSRC:.cpp=.o)
 

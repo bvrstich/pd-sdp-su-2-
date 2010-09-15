@@ -51,6 +51,7 @@ using std::ostream;
 #endif
 
 class EIG;
+class Lineq;
 
 /**
  * @author Brecht Verstichel
@@ -94,7 +95,7 @@ class SUP{
       SUP &operator=(SUP &);
 
       //overload equality operator
-      SUP &operator=(double &);
+      SUP &operator=(const double );
 
       TPM &tpm(int i);
 
@@ -102,7 +103,7 @@ class SUP{
       void init_S();
 
       //initialiseer Z
-      void init_Z(double alpha,TPM &ham,SUP &u_0);
+      void init_Z(double alpha,TPM &ham,const Lineq &);
 
       int gN();
 
@@ -118,9 +119,9 @@ class SUP{
 
       void dscal(double alpha);
 
-      void proj_U();
+      void proj_U(const Lineq &);
 
-      void proj_C(TPM &);
+      void proj_C(TPM &,const Lineq &);
 
       //maak de matrix D, nodig voor de hessiaan van het stelsel
       void D(SUP &S,SUP &Z);
@@ -134,9 +135,7 @@ class SUP{
 
       double trace();
 
-      double U_trace();
-
-      void proj_C();
+      void proj_C(const Lineq &);
 
       SUP &mprod(SUP &,SUP &);
 
@@ -144,19 +143,17 @@ class SUP{
 
       void fill();
 
-      int solve(SUP &B,SUP &D);
+      int solve(SUP &B,SUP &D,const Lineq &);
 
-      void H(SUP &B,SUP &D);
-
-      void proj_U_Tr();
-
-      double U_norm();
+      void H(SUP &B,SUP &D,const Lineq &);
 
       double center_dev(SUP &Z);
 
       double line_search(SUP &DZ,SUP &S,SUP &Z,double max_dev);
 
       void fill_Random();
+
+      void proj_u_0(const Lineq &);
 
 #ifdef __G_CON
 

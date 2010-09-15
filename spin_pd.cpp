@@ -40,6 +40,8 @@ int main(void){
    int M = 8;//dim sp hilbert space
    int N = 4;//nr of particles
 
+   Lineq lineq(M,N);
+
    //hamiltoniaan
    TPM ham(M,N);
    ham.hubbard(1.0);
@@ -48,7 +50,7 @@ int main(void){
    S.init_S();
 
    SUP Z(M,N);
-   Z.init_Z(100.0,ham,S);
+   Z.init_Z(100.0,ham,lineq);
 
    int dim = Z.gdim();
 
@@ -97,13 +99,13 @@ int main(void){
       //collaps B onto b to construct the right hand side of the primal Newton equation
       TPM b(M,N);
 
-      b.collaps(1,B);
+      b.collaps(1,B,lineq);
 
       //dit wordt de stap:
       TPM delta(M,N);
 
       //los het stelsel op, geeft aantal iteraties nodig terug:
-      cout << delta.solve(b,D_inv) << "\t";
+      cout << delta.solve(b,D_inv,lineq) << "\t";
 
       //nog updaten van S en Z
       SUP DS(M,N);
@@ -119,7 +121,7 @@ int main(void){
       DZ -= B;
 
       //voor de zekerheid nog projecteren op juiste subruimte:
-      DZ.proj_C();
+      DZ.proj_C(lineq);
 
       //met deze 'ansatz' het Z stelsel proberen op te lossen
       //eerst rechterlid B maken
@@ -131,10 +133,10 @@ int main(void){
 
       B -= S;
 
-      B.proj_C();
+      B.proj_C(lineq);
 
       //los het stelsel op, geeft aantal duale iteraties nodig terug:
-      cout << DZ.solve(B,D) << endl;
+      cout << DZ.solve(B,D,lineq) << endl;
 
       //welke stapgrootte moet ik nemen?
       if(flag == 0 || flag == 2){//voor centering

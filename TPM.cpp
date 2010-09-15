@@ -463,20 +463,29 @@ void TPM::set_unit(){
 }
 
 /**
- * fill the TPM object with the S^2 matrix
+ * fill the TPM object with the S^2 matrix: diagonal matrix in coupled tp space.
  */
 void TPM::set_S_2(){
 
-}
+   //S = 0 block
+   for(int i = 0;i < gdim(0);++i){
 
-/**
- * orthogonal projection onto the space of traceless matrices
- */
-void TPM::proj_Tr(){
+      (*this)(0,i,i) = -1.5 * (N - 2.0)/(N - 1.0);
 
-   double ward = (2.0 * this->trace())/(M*(M - 1));
+      for(int j = i + 1;j < gdim(0);++j)
+         (*this)(0,i,j) = (*this)(0,j,i) = 0.0;
 
-   this->min_unit(ward);
+   }
+
+   //S = 1 block
+   for(int i = 0;i < this->gdim(1);++i){
+
+      (*this)(1,i,i) = -1.5 * (N - 2.0)/(N - 1.0) + 2.0;
+
+      for(int j = i + 1;j < gdim(1);++j)
+         (*this)(1,i,j) = (*this)(1,j,i) = 0.0;
+
+   }
 
 }
 
@@ -487,7 +496,7 @@ void TPM::proj_Tr(){
  * @param b TPM domain matrix, hessian will act on it and the image will be put in this
  * @param D SUP matrix that defines the structure of the hessian map. (see primal-dual.pdf for more info)
  */
-void TPM::H(TPM &b,SUP &D){
+void TPM::H(TPM &b,SUP &D,const Lineq &lineq){
 
    this->L_map(D.tpm(0),b);
 
@@ -553,7 +562,7 @@ void TPM::H(TPM &b,SUP &D){
 
 #endif
 
-   this->proj_Tr();
+   this->proj_E(0,lineq);
 
 }
 
@@ -565,7 +574,7 @@ void TPM::H(TPM &b,SUP &D){
  * @param D SUP matrix that defines the structure of the hessian
  * @return return number of iterations needed to converge to the desired accuracy
  */
-int TPM::solve(TPM &b,SUP &D){
+int TPM::solve(TPM &b,SUP &D,const Lineq &lineq){
 
    *this = 0;
 
@@ -584,7 +593,7 @@ int TPM::solve(TPM &b,SUP &D){
 
       ++cg_iter;
 
-      Hb.H(b,D);
+      Hb.H(b,D,lineq);
 
       ward = rr/b.ddot(Hb);
 
@@ -659,40 +668,13 @@ void TPM::S(int option,TPM &tpm_d){
 }
 
 /**
- * Deduct the unitmatrix times a constant (scale) from this.\n\n
- * this -= scale* 1
- * @param scale the constant
- */
-void TPM::min_unit(double scale){
-
-   for(int S = 0;S < 2;++S)
-      for(int i = 0;i < this->gdim(S);++i)
-         (*this)(S,i,i) -= scale;
-
-}
-
-/**
- * Deduct from this - de Q-map of the unit-matrix  times a constante (scale):\n\n
- * this -= scale* Q(1)
- * @param scale the constant
- */
-void TPM::min_qunit(double scale){
-
-   double q = 1.0 + (M - 2*N)*(M - 1.0)/(N*(N - 1.0));
-
-   scale *= q;
-
-   this->min_unit(scale);
-
-}
-
-/**
  * Collaps a SUP matrix S onto a TPM matrix like this:\n\n
  * sum_i Tr (S u^i)f^i = this
- * @param option = 0, project onto full symmetric matrix space, = 1 project onto traceless symmetric matrix space
+ * @param option = 0, project onto full symmetric matrix space, = 1 project onto "constraintless space" --> Tr (*this) E^(i) = 0
  * @param S input SUP
+ * @param lineq The object containing the linear constraints.
  */
-void TPM::collaps(int option,SUP &S){
+void TPM::collaps(int option,SUP &S,const Lineq &lineq){
 
    *this = S.tpm(0);
 
@@ -727,7 +709,7 @@ void TPM::collaps(int option,SUP &S){
 #endif
 
    if(option == 1)
-      this->proj_Tr();
+      this->proj_E(0,lineq);
 
 }
 
@@ -1172,5 +1154,27 @@ void TPM::in_sp(const char *filename){
    }
 
    this->symmetrize();
+
+}
+
+/**
+ * project the TPM object onto a space where (option == 0) Tr (Gamma' E) = 0, or (option == 1) Tr (Gamma' E) = e
+ * @param option project onto (option = 0) 0 or (option = 1) e
+ * @param lineq The object containing the linear constraints
+ */
+void TPM::proj_E(int option,const Lineq &lineq){
+
+   double ward;
+
+   for(int i = 0;i < lineq.gnr();++i){
+
+      if(option == 1)
+         ward = this->ddot(lineq.gE_ortho(i)) - lineq.ge_ortho(i);//Tr(Gamma E~) - e~
+      else
+         ward = this->ddot(lineq.gE_ortho(i));
+
+      this->daxpy(-ward,lineq.gE_ortho(i));
+
+   }
 
 }

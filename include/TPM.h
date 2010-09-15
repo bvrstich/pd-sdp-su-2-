@@ -12,6 +12,7 @@ class SUP;
 class PHM;
 class DPM;
 class PPHM;
+class Lineq;
 
 /**
  * @author Brecht Verstichel
@@ -76,19 +77,13 @@ class TPM : public BlockMatrix {
 
       void set_S_2();
 
-      void proj_Tr();
-
       //de hessiaan afbeelding:
-      void H(TPM &b,SUP &D);
+      void H(TPM &b,SUP &D,const Lineq &);
 
       //los het stelsel op
-      int solve(TPM &b,SUP &D);
+      int solve(TPM &b,SUP &D,const Lineq &);
 
-      void min_unit(double scale);
-
-      void min_qunit(double scale);
-
-      void collaps(int option,SUP &);
+      void collaps(int option,SUP &,const Lineq &);
 
       void sp_pairing(double );
 
@@ -115,6 +110,7 @@ class TPM : public BlockMatrix {
       //input TPM from file
       void in_sp(const char *);
 
+      void proj_E(int,const Lineq &);
 
    private:
 

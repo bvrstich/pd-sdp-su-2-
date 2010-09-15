@@ -244,7 +244,7 @@ SUP &SUP::operator=(SUP &SZ_c){
  * e.g. SZ = 0 makes all the Matrix elements zero.
  * @param a the number
  */
-SUP &SUP::operator=(double &a){
+SUP &SUP::operator=(const double a){
 
    (*SZ_tp[0]) = a;
    (*SZ_tp[1]) = a;
@@ -392,14 +392,15 @@ void SUP::fill_Random(){
 /**
  * Initialisation for dual SUP matrix Z, see primal_dual.pdf for info.
  */
-void SUP::init_Z(double alpha,TPM &ham,SUP &u_0){
+void SUP::init_Z(double alpha,TPM &ham,const Lineq &lineq){
 
    this->fill_Random();
 
-   this->proj_C(ham);
-
    //nog een eenheidsmatrix maal constante bijtellen zodat Z positief definiet is:
-   this->daxpy(alpha,u_0); 
+   this->daxpy(alpha,lineq.gu_0(0)); 
+
+   //project onto C-space
+   this->proj_C(ham,lineq);
 
 }
 
@@ -572,13 +573,14 @@ void SUP::dscal(double alpha){
 /**
  * Orthogonal projection of a general SUP matrix diag[ M M_Q ( M_G M_T1 M_T2 ) ] onto U space: diag[ M_u Q(M_u) ( G(M_u) T1(M_u) T2(M_u) ) ]
  * for more information see primal_dual.pdf
+ * @param lineq the object containing the linear constraints (and the u_0 matrices)
  */
-void SUP::proj_U(){
+void SUP::proj_U(const Lineq &lineq){
   
    //eerst M_Gamma + Q(M_Q) + ( G(M_G) + T1(M_T1) + T2(M_T2) ) in O stoppen
    TPM O(M,N);
 
-   O.collaps(0,*this);
+   O.collaps(0,*this,lineq);
 
    //dan de inverse overlapmatrix hierop laten inwerken en in this[0] stoppen
    SZ_tp[0]->S(-1,O);
@@ -587,8 +589,8 @@ void SUP::proj_U(){
    this->fill();
 
    //Nu is de projectie op de u^\alpha's gebeurd.
-   //Nu nog de projectie op de u^i's: dus component langs u^0 eruit halen
-   this->proj_U_Tr();
+   //Nu nog de projectie op de u^i's: dus component uit de u^0-ruimte eruit halen
+   this->proj_u_0(lineq);
 
 }
 
@@ -597,12 +599,13 @@ void SUP::proj_U(){
  * Tr(Z u^i) = h^i      with h^i = Tr(tpm f^i)\n\n
  * is valid.
  * @param tpm input TPM (mostly the hamiltonian of the problem)
+ * @param lineq the object containing the linear constraints (and the u_0 matrices)
  */
-void SUP::proj_C(TPM &tpm){
+void SUP::proj_C(TPM &tpm,const Lineq &lineq){
 
    TPM hulp(M,N);
 
-   hulp.collaps(0,*this);
+   hulp.collaps(0,*this,lineq);
 
    hulp -= tpm;
 
@@ -616,7 +619,7 @@ void SUP::proj_C(TPM &tpm){
    //and fill it up Johnny
    Z_res.fill();
 
-   Z_res.proj_U_Tr();
+   Z_res.proj_u_0(lineq);
 
    *this -= Z_res;
 
@@ -776,13 +779,14 @@ double SUP::trace(){
 /**
  * Orthogonal projection of a general SUP matrix [ M M_Q ( M_G M_T1 M_T2 ) ] onto the orthogonal complement of the U space (C space)
  * See primal_dual.pdf for more information
+ * @param lineq the object containing the linear constraints (and the u_0 matrices)
  */
-void SUP::proj_C(){
+void SUP::proj_C(const Lineq &lineq){
 
    SUP Z_copy(*this);
 
    //projecteer op de U ruimte
-   Z_copy.proj_U();
+   Z_copy.proj_U(lineq);
 
    //en het orthogonaal complement nemen:
    *this -= Z_copy;
@@ -885,12 +889,13 @@ void SUP::fill(){
  * H(*this) = B in which H is the dual hessian map
  * @param B right hand side of the equation
  * @param D SUP matrix that defines the structure of the hessian map (the metric) (inverse of the primal Newton equation hessian)
+ * @param lineq The linear equalities that have to be fulfilled, this object contains the u^0 matrices
  * @return return the number of iteration required to converge
  */
-int SUP::solve(SUP &B,SUP &D){
+int SUP::solve(SUP &B,SUP &D,const Lineq &lineq){
 
    SUP HB(M,N);
-   HB.H(*this,D);
+   HB.H(*this,D,lineq);
 
    B -= HB;
 
@@ -906,7 +911,7 @@ int SUP::solve(SUP &B,SUP &D){
 
       ++cg_iter;
 
-      HB.H(B,D);
+      HB.H(B,D,lineq);
 
       ward = rr/B.ddot(HB);
 
@@ -937,129 +942,13 @@ int SUP::solve(SUP &B,SUP &D){
  * HB = DBD (dus SUP::L_map), projected onto C-space (SUP::proj_C)
  * @param B SUP matrix onto which the hessian works.
  * @param D SUP matrix that defines the structure of the map (metric)
+ * @param lineq The linear equalities that have to be fulfilled, this object contains the u^0 matrices
  */
-void SUP::H(SUP &B,SUP &D){
+void SUP::H(SUP &B,SUP &D,const Lineq &lineq){
 
    this->L_map(D,B);
 
-   this->proj_C();
-
-}
-
-/**
- * @return the value Tr (1_u 1_u) for the conditions active
- */
-double SUP::U_norm(){
-
-   double norm;
-
-   double q = 1.0 + (M - 2*N)*(M - 1.0)/(N*(N - 1.0));
-
-   norm = M*(M - 1)/2 * (1 + q*q);
-
-#ifdef __G_CON
-
-   double g = (M - N)/(N - 1.0);
-
-   norm += M*M * (1.0 + g*g) + 2*g*M;
-
-#endif
-
-#ifdef __T1_CON
-   
-   double t1 = (M*(M - 1.0) - 3.0*(M - N)*N)/(N*(N - 1.0));
-
-   norm += M*(M - 1.0)*(M - 2.0)/6.0 * t1 * t1;
-
-#endif
-
-#ifdef __T2_CON
-
-   double t2 = (M - N)/(N - 1.0);
-
-   norm += t2* t2 * (M - 1.0)* M*M /2.0 + 2.0 * t2 * (M - 1.0)*M + M*(M - 1.0)*(M - 1.0);
-
-#endif
-
-   return norm;
-
-}
-
-/**
- * orthogonally project (*this) onto the space where the U-trace is zero
- */
-void SUP::proj_U_Tr(){
-
-   double ward = (this->U_trace() )/ (this->U_norm() );
-
-   //dan deze factor aftrekken met u^0
-   SZ_tp[0]->min_unit(ward);
-   SZ_tp[1]->min_qunit(ward);
-
-#ifdef __G_CON
-
-   //dan deze factor aftrekken met u^0
-   SZ_ph->min_gunit(ward);
-
-#endif
-
-#ifdef __T1_CON
-
-   //dan deze factor aftrekken met u^0
-   SZ_dp->min_tunit(ward);
-
-#endif
-
-#ifdef __T2_CON
-
-   //dan deze factor aftrekken met u^0
-   SZ_pph->min_tunit(ward);
-
-#endif
-
-}
-
-/**
- * @return The U-trace of a SUP matrix (*this), which is defined as Tr ( (*this) 1_u), with 1_u defined as diag [1 Q(1) ( G(1) T1(1) T2(1) ) ]
- */
-double SUP::U_trace(){
-
-   //q is the factor by which the unit matrix is multiplied when the Q(1) is taken:
-   double q = 1.0 + (M - 2*N)*(M - 1.0)/(N*(N - 1.0));
-
-   //trace of the Gamma piece of the SUP
-   double ward = SZ_tp[0]->trace();
-
-   //plus q times trace of the Q piece of the SUP
-   ward += q*SZ_tp[1]->trace();
-
-#ifdef __G_CON
-
-   //g is the factor before the identity matrix in the image of G(1)
-   double g = (M - N)/(N - 1.0);
-
-   //skew trace is sum_{ab} G_{aa;bb}
-   ward += g*SZ_ph->trace() + SZ_ph->skew_trace();
-
-#endif
-
-#ifdef __T1_CON
-
-   double t1 = (M*(M - 1.0) - 3.0*N*(M - N))/(N*(N - 1.0));
-
-   ward += t1*SZ_dp->trace();
-
-#endif
-
-#ifdef __T2_CON
-
-   double t2 = (M - N)/(N - 1.0);
-
-   ward += t2*SZ_pph->trace() + SZ_pph->skew_trace();
-
-#endif
-
-   return ward;
+   this->proj_C(lineq);
 
 }
 
@@ -1158,5 +1047,23 @@ double SUP::line_search(SUP &DZ,SUP &S,SUP &Z,double max_dev){
    }
 
    return c;
+
+}
+
+/**
+ * orthogonally project (*this) onto the subspace witouth the u_0's!
+ * @param lineq The linear equalities that have to be fulfilled, this object contains the u^0 matrices
+ */
+void SUP::proj_u_0(const Lineq &lineq){
+
+   double ward;
+
+   for(int i = 0;i < lineq.gnr();++i){
+
+      ward = -this->ddot(lineq.gu_0_ortho(i));
+
+      this->daxpy(ward,lineq.gu_0_ortho(i));
+
+   }
 
 }
