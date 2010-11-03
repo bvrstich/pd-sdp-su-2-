@@ -5,6 +5,7 @@
 #include <fstream>
 
 using std::ostream;
+using std::ifstream;
 
 #include "BlockMatrix.h"
 
@@ -116,6 +117,8 @@ class TPM : public BlockMatrix {
       void in_sp(const char *);
 
       void pairing(double x[]);
+
+      void in(ifstream &);
 
    private:
 

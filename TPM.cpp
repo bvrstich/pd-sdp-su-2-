@@ -1213,3 +1213,24 @@ void TPM::pairing(double x[]){
    this->symmetrize();
 
 }
+
+/**
+ * Fill a TPM object from a file.
+ * @param input The ifstream object, corresponding to the file containing the TPM
+ */
+void TPM::in(ifstream &input){
+
+   double block,dim,deg;
+   int I,J;
+
+   for(int B = 0;B < gnr();++B){
+
+      input >> block >> dim >> deg;
+
+      for(int i = 0;i < gdim(B);++i)
+         for(int j = 0;j < gdim(B);++j)
+            input >> I >> J >> (*this)(B,i,j);
+
+   }
+
+}
