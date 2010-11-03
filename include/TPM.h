@@ -115,6 +115,7 @@ class TPM : public BlockMatrix {
       //input TPM from file
       void in_sp(const char *);
 
+      void pairing(double x[]);
 
    private:
 

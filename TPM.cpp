@@ -740,8 +740,8 @@ void TPM::sp_pairing(double pair_coupling){
    double *E = new double [M/2];
 
    //single particle spectrum
-   for(int a = -M/2;a < 0;++a)
-      E[M/2 + a] = (double) a;
+   for(int a = 0;a < M/2;++a)
+      E[a] = a + 1.0;
 
    double *x = new double [M/2];
 
@@ -1169,6 +1169,45 @@ void TPM::in_sp(const char *filename){
 
       (*this)(S,i,j) = value;
 
+   }
+
+   this->symmetrize();
+
+}
+
+/**
+ * fill the object with a pure pairing hamiltonian with structure vector x
+ * @param the structure of the pairing vector
+ */
+void TPM::pairing(double x[]){
+
+   //init zero
+   *this = 0.0;
+
+  //normeren op 1/2
+   double ward = 0.0;
+
+   for(int i = 0;i < M/2;++i)
+      ward += x[i]*x[i];
+
+   ward *= 2.0;
+
+   for(int a = 0;a < M/2;++a)
+      x[a] /= std::sqrt(ward);
+
+   int i,j;
+
+   for(int a = 0;a < M/2;++a){
+
+      i = s2t[0][a][a];
+
+      for(int c = a;c < M/2;++c){
+
+         j = s2t[0][c][c];
+
+         (*this)(0,i,j) += -2*x[a]*x[c];
+
+      }
    }
 
    this->symmetrize();

@@ -30,25 +30,27 @@ using std::ofstream;
  * For more information on the actual method, see primal_dual.pdf
  */
 
-int main(void){
+int main(int argc,char *argv[]){
 
    //initialize the random nr generator
    srand(time(NULL));
 
    cout.precision(10);
 
-   int M = 8;//dim sp hilbert space
-   int N = 4;//nr of particles
+   int M = 24;//dim sp hilbert space
+   int N = 12;//nr of particles
 
-   //hamiltoniaan
+   double g = atof(argv[1]);
+
+   //pair coupling
    TPM ham(M,N);
-   ham.hubbard(1.0);
+   ham.sp_pairing(g);
 
    SUP S(M,N);
    S.init_S();
 
    SUP Z(M,N);
-   Z.init_Z(100.0,ham,S);
+   Z.init_Z(1000.0,ham,S);
 
    int dim = Z.gdim();
 
@@ -203,6 +205,8 @@ int main(void){
    cout << "E_0 = " << energy << " with accuracy of " << pd_gap << " and a deviation from centrality of " << center_dev << endl;
    cout << endl;
    cout << "<S^2>\t=\t" << S.tpm(0).spin() << endl;
+
+   cout << g*2/M << "\t" << ham.ddot(S.tpm(0)) << endl;
 
    //print density matrix to file
    //   (S.tpm(0)).out("workspace/input/rdm.in");
