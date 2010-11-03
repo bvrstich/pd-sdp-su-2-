@@ -3,9 +3,12 @@
  * This is an implementation of a spinsymmetrical primal dual interior point method
  * for optimizing the second order density matrix using the P Q G T1 and T2 N-representability conditions.
  * The method used is a path following algorithm with predictor corrector steps.
- * At compile time you can decide which condtions will be active compile with make PQ, PQG, PQGT1, PQGT2 or PQGT=(for all conditions).
+ * At compile time you can decide which conditions will be active compile with make PQ, PQG, PQGT1, PQGT2 or PQGT=(for all conditions).
+ * 
+ * Specially adapted for sp pairing hamiltonian: takes as input the pair coupling constant g. Also added a script for running over g to the git.
+ *
  * @author Brecht Verstichel
- * @date 14-04-2010
+ * @date 03-11-2010
  */
 #include <iostream>
 #include <fstream>
