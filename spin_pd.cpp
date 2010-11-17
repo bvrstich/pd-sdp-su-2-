@@ -37,25 +37,28 @@ int main(int argc,char *argv[]){
 
    cout.precision(10);
 
-   int M = 24;//dim sp hilbert space
-   int N = 12;//nr of particles
+   int M = 12;//dim sp hilbert space
+   int N = 6;//nr of particles
 
    char input_filename[100];
+   char brol[500];
 
-   for(double g = 0.01;g < 2.001;g+= 0.01){
+   for(double g = 0.01;g < 5.001;g+= 0.01){
 
       //make the filename
-      sprintf(input_filename,"/home/bright/bestanden/results/sp_pairing/DM_out/rdm_g=%f.out",g);
+      sprintf(input_filename,"/home/bright/bestanden/results/sp_pairing/equidistant/4_8/PQG/output/g=%f.out",g);
 
       //make the ifstream object
       ifstream input(input_filename);
 
-      TPM tpm(M,N);
-      tpm.in(input);
+      int iter = 0;
 
-      BlockVector<TPM> v(tpm);
+      while(input){
+         input.getline(brol,500);
+         ++iter;
+      }
 
-      cout << g << "\t" << v.max() << endl;
+      cout << g << "\t" << iter << endl;
 
    }
 
