@@ -37,16 +37,33 @@ int main(int argc,char *argv[]){
 
    cout.precision(10);
 
-   int M = 12;//dim sp hilbert space
-   int N = 6;//nr of particles
+   int M = 32;//dim sp hilbert space
+   int N = 16;//nr of particles
 
    char input_filename[100];
-   char brol[500];
+//   char brol[500];
 
-   for(double g = 0.01;g < 5.001;g+= 0.01){
+   for(double g = 0.1;g < 5.001;g+= 0.1){
 
+      sprintf(input_filename,"/home/bright/bestanden/results/sp_pairing/equidistant/8_16/PQG/DM_out/rdm_g=%f.out",g);
+
+      //make the ifstream object
+      ifstream input(input_filename);
+
+      TPM tpm(M,N);
+
+      tpm.in(input);
+
+      TPM ham(M,N);
+      ham.sp_pairing(g*M/2);
+
+      cout << g << "\t" << tpm.ddot(ham) << endl;
+
+   }
+
+/* THIS IS FOR COUNTING NR OF LINES IN OUTPUT FILE
       //make the filename
-      sprintf(input_filename,"/home/bright/bestanden/results/sp_pairing/equidistant/4_8/PQG/output/g=%f.out",g);
+      sprintf(input_filename,"/home/bright/bestanden/results/sp_pairing/equidistant/8_16/PQG/output/g=%f.out",g);
 
       //make the ifstream object
       ifstream input(input_filename);
@@ -61,6 +78,7 @@ int main(int argc,char *argv[]){
       cout << g << "\t" << iter << endl;
 
    }
+*/
 
    return 0;
 
