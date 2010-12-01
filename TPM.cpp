@@ -780,6 +780,8 @@ void TPM::sp_pairing(double pair_coupling){
             c = t2s[S][j][0];
             d = t2s[S][j][1];
 
+            (*this)(S,i,j) = 0.0;
+
             if(a == b && c == d)
                (*this)(S,i,j) = -2.0*pair_coupling*x[a]*x[c];
 
@@ -792,6 +794,7 @@ void TPM::sp_pairing(double pair_coupling){
    this->symmetrize();
 
    delete [] E;
+   delete [] x;
 
 }
 

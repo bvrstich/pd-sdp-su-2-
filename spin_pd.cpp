@@ -40,8 +40,8 @@ int main(int argc,char *argv[]){
 
    cout.precision(10);
 
-   int M = 32;//dim sp hilbert space
-   int N = 16;//nr of particles
+   int M = 8;//dim sp hilbert space
+   int N = 4;//nr of particles
 
    double g = atof(argv[1]);
 
