@@ -45,14 +45,6 @@ int main(int argc,char *argv[]){
 
    double g = atof(argv[1]);
 
-   char filename_out[200];
-
-   sprintf(filename_out,"/home/bright/bestanden/results/sp_pairing/equidistant/4_8/PQG/output/g=%f.out",g*2.0/M);
-
-   ofstream output(filename_out);
-
-   output.precision(10);
-
    //pair coupling
    TPM ham(M,N);
    ham.sp_pairing(g);
@@ -86,7 +78,7 @@ int main(int argc,char *argv[]){
 
    while(flag != 3){
 
-      output << (S.tpm(0)).trace() << "\t" << pd_gap << "\t" << center_dev << "\t" << energy << "\t";
+      cout << (S.tpm(0)).trace() << "\t" << pd_gap << "\t" << center_dev << "\t" << energy << "\t";
 
       //matrix D aanmaken voor de hessiaan van het duale stelsel
       SUP D(M,N);
@@ -116,7 +108,7 @@ int main(int argc,char *argv[]){
       TPM delta(M,N);
 
       //los het stelsel op, geeft aantal iteraties nodig terug:
-      output << delta.solve(b,D_inv) << "\t";
+      cout << delta.solve(b,D_inv) << "\t";
 
       //nog updaten van S en Z
       SUP DS(M,N);
@@ -147,7 +139,7 @@ int main(int argc,char *argv[]){
       B.proj_C();
 
       //los het stelsel op, geeft aantal duale iteraties nodig terug:
-      output << DZ.solve(B,D) << endl;
+      cout << DZ.solve(B,D) << endl;
 
       //welke stapgrootte moet ik nemen?
       if(flag == 0 || flag == 2){//voor centering
@@ -210,21 +202,17 @@ int main(int argc,char *argv[]){
 
    }
 
-   output << endl;
-   output << "FINAL RESULT " << endl;
-   output << endl;
-   output << "E_0 = " << energy << " with accuracy of " << pd_gap << " and a deviation from centrality of " << center_dev << endl;
-   output << endl;
-   output << "<S^2>\t=\t" << S.tpm(0).spin() << endl;
+   cout << endl;
+   cout << "FINAL RESULT " << endl;
+   cout << endl;
+   cout << "E_0 = " << energy << " with accuracy of " << pd_gap << " and a deviation from centrality of " << center_dev << endl;
+   cout << endl;
+   cout << "<S^2>\t=\t" << S.tpm(0).spin() << endl;
 
    cout << g*2/M << "\t" << ham.ddot(S.tpm(0)) << endl;
 
-   char filename[200];
-
-   sprintf(filename,"/home/bright/bestanden/results/sp_pairing/equidistant/4_7/PQGT/DM_out/rdm_g=%f.out",g*2.0/M);
-
    //print density matrix to file
-   (S.tpm(0)).out(filename);
+   //(S.tpm(0)).out(filename);
 
    return 0;
 
