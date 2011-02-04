@@ -37,8 +37,8 @@ int main(void){
 
    cout.precision(10);
 
-   int M = 12;//dim sp hilbert space
-   int N = 5;//nr of particles
+   int M = 8;//dim sp hilbert space
+   int N = 3;//nr of particles
 
    //hamiltoniaan
    TPM ham(M,N);
@@ -48,7 +48,7 @@ int main(void){
    S.init_S();
 
    SUP Z(M,N);
-   Z.init_Z(100.0,ham,S);
+   Z.init_Z(1000.0,ham,S);
 
    int dim = Z.gdim();
 
@@ -213,12 +213,12 @@ int main(void){
 
    Vector vgm1(gm);
    cout << vgm1 << endl;
-
+/*
    gm.q(S.tpm(0));
 
    Vector vgm2(gm);
    cout << vgm2;
-
+*/
    return 0;
 
 }
