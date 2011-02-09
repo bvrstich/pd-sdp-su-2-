@@ -21,7 +21,7 @@ class Vector;
  * @param output The stream to which you are writing (e.g. cout)
  * @param vector_p de Vector you want to print
  */
-ostream &operator<<(ostream &output,Vector &vector_p);
+ostream &operator<<(ostream &output,const Vector &vector_p);
 
 /**
  * @author Brecht Verstichel
@@ -41,23 +41,23 @@ class Vector{
       Vector(Matrix &);
 
       //copy constructor
-      Vector(Vector &);
+      Vector(const Vector &);
 
       //destructor
       virtual ~Vector();
 
       //overload equality operator
-      Vector &operator=(Vector &);
+      Vector &operator=(const Vector &);
 
       Vector &operator=(double );
 
       //overload += operator
-      Vector &operator+=(Vector &);
+      Vector &operator+=(const Vector &);
 
       //overload -= operator
-      Vector &operator-=(Vector &);
+      Vector &operator-=(const Vector &);
 
-      Vector &daxpy(double alpha,Vector &);
+      Vector &daxpy(double alpha,const Vector &);
 
       Vector &operator/=(double );
 
@@ -74,21 +74,24 @@ class Vector{
       //get the pointer to the vector
       double *gVector();
 
-      int gn();
+      //const version
+      const double *gVector() const;
 
-      double sum();
+      int gn() const;
 
-      double log_product();
+      double sum() const;
 
-      double ddot(Vector &);
+      double log_product() const;
+
+      double ddot(const Vector &) const;
 
       void dscal(double alpha);
 
-      double min();
+      double min() const;
       
-      double max();
+      double max() const;
 
-      double centerpot(double );
+      double centerpot(double ) const;
 
    private:
 

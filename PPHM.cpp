@@ -44,7 +44,7 @@ PPHM::PPHM(int M,int N) : BlockMatrix(2) {
  * if counter == 0, allocates and constructs the lists containing the relationship between sp and pph basis.
  * @param pphm_c PPHM object to be copied into (*this)
  */
-PPHM::PPHM(PPHM &pphm_c) : BlockMatrix(pphm_c) {
+PPHM::PPHM(const PPHM &pphm_c) : BlockMatrix(pphm_c) {
 
    this->N = pphm_c.gN();
    this->M = pphm_c.gM();
@@ -240,7 +240,7 @@ void PPHM::construct_lists(){
 /** 
  * @return nr of particles
  */
-int PPHM::gN(){
+int PPHM::gN() const{
 
    return N;
 
@@ -249,7 +249,7 @@ int PPHM::gN(){
 /**
  * @return nr of sp orbitals
  */
-int PPHM::gM(){
+int PPHM::gM() const{
 
    return M;
 
@@ -364,7 +364,7 @@ int PPHM::get_inco(int S,int S_ab,int a,int b,int c,int &i){
  * The spincoupled T2 map, maps a TPM onto a PPHM object. See notes for more info
  * @param tpm Input TPM matrix
  */
-void PPHM::T(TPM &tpm){
+void PPHM::T(const TPM &tpm){
 
    SPM spm(1.0/(N - 1.0),tpm);
 
@@ -597,225 +597,7 @@ void PPHM::T(TPM &tpm){
 
 }
 
-/**
- * Deduct scale times the T2 of the unit matrix from (*this).
- * @param scale The number by which to scale the unitmatrix.
- */
-void PPHM::min_tunit(double scale){
-
-   int i,j;
-
-   //S_ab == 0: (0) a b a; (S_de) c b c
-   for(int a = 0;a < M/2;++a){
-
-      for(int b = 0;b < a;++b){//b < a : b a a
-
-         i = s2pph[0][0][b][a][a];
-
-         //S_de == 0: c >= a always:
-         for(int c = a;c < M/2;++c){//b < c
-
-            j = s2pph[0][0][b][c][c];
-
-            (*this)(0,i,j) -= 0.5 * scale;
-
-         }
-
-         //S_de == 1: c can be anything except == b:
-         for(int c = 0;c < b;++c){//c < b : c b c
-
-            j = s2pph[0][1][c][b][c];
-
-            (*this)(0,i,j) -= 0.5 * std::sqrt(3.0) * scale;
-
-         }
-
-         for(int c = b + 1;c < M/2;++c){//c > b: b c c
-
-            j = s2pph[0][1][b][c][c];
-
-            (*this)(0,i,j) += 0.5 * std::sqrt(3.0) * scale;
-
-         }
-
-      }
-
-      //b == a
-      i = s2pph[0][0][a][a][a];
-
-      //S_de == 0:
-      
-      //first c == a == b
-      j = i;
-
-      (*this)(0,i,j) -= scale;
-
-      for(int c = a + 1;c < M/2;++c){//then c > a : a c c
-
-         j = s2pph[0][0][a][c][c];
-
-         (*this)(0,i,j) -= scale / std::sqrt(2.0);
-
-      }
-
-      //S_de == 1: c can be anything  except == a:
-      for(int c = 0;c < a;++c){//c < a : c a c
-
-         j = s2pph[0][1][c][a][c];
-
-         (*this)(0,i,j) -= std::sqrt(1.5) * scale;
-
-      }
-
-      for(int c = a + 1;c < M/2;++c){//c > a: a c c
-
-         j = s2pph[0][1][a][c][c];
-
-         (*this)(0,i,j) += std::sqrt(1.5) * scale;
-
-      }
-
-      //b > a: a b a
-      for(int b = a + 1;b < M/2;++b){
-
-         i = s2pph[0][0][a][b][a];
-
-         //S_de == 0: c always >= a
-         for(int c = a;c < b;++c){//c < b : c b c
-
-            j = s2pph[0][0][c][b][c];
-
-            (*this)(0,i,j) -= 0.5 * scale;
-
-         }
-
-         //c == b
-         j = s2pph[0][0][b][b][b];
-
-         (*this)(0,i,j) -= scale / std::sqrt(2.0);
-
-         for(int c = b + 1;c < M/2;++c){//c > b : b c c
-
-            j = s2pph[0][0][b][c][c];
-
-            (*this)(0,i,j) -= 0.5 * scale;
-
-         }
-
-         //S_de == 1: c can be anything except == b
-         for(int c = 0;c < b;++c){//c < b : c b c
-
-            j = s2pph[0][1][c][b][c];
-
-            (*this)(0,i,j) -= 0.5 * std::sqrt(3.0) * scale;
-
-         }
-
-         for(int c = b + 1;c < M/2;++c){//c > b : b c c
-
-            j = s2pph[0][1][b][c][c];
-
-            (*this)(0,i,j) += 0.5 * std::sqrt(3.0) * scale;
-
-         }
-
-      }
-
-   }
-
-   //S_ab == 1: (1) a b a ; (1) c b c
-   for(int a = 0;a < M/2;++a){
-
-      for(int b = 0;b < a;++b){//b < a : b a a
-
-         i = s2pph[0][1][b][a][a];
-
-         //c always >= a and always S_de == 1
-         for(int c = a;c < M/2;++c){//b < a < c
-
-            j = s2pph[0][1][b][c][c];
-
-            (*this)(0,i,j) -= 1.5 * scale;
-
-         }
-
-      }
-
-      for(int b = a + 1;b < M/2;++b){//b > a: a b a
-
-         i = s2pph[0][1][a][b][a];
-
-         //c alway >= a and c != b
-         for(int c = a;c < b;++c){//c < b : c b c
-
-            j = s2pph[0][1][c][b][c];
-
-            (*this)(0,i,j) -= 1.5 * scale;
-
-         }
-
-         for(int c = b + 1;c < M/2;++c){//c > b : b c c
-
-            j = s2pph[0][1][b][c][c];
-
-            (*this)(0,i,j) += 1.5 * scale;
-
-         }
-
-      }
-
-   }
-
-   double t2 = (M - N)/(N - 1.0);
-
-   scale = t2*scale;
-
-   for(int S = 0;S < 2;++S)
-      for(int k = 0;k < this->gdim(S);++k)
-         (*this)(S,k,k) -= scale;
-
-   this->symmetrize();
-
-}
-
-/** 
- * @return the skew trace, for PPHM matrices defined in uncoupled form as sum_abc PPHM(a,b,a,c,b,c). For coupled form see symmetry.pdf
- */
-double PPHM::skew_trace(){
-
-   double ward = 0.0;
-
-   double hard;
-   double spin;
-
-   for(int S_ab = 0;S_ab < 2;++S_ab)
-      for(int S_de = 0;S_de < 2;++S_de){
-
-         spin = std::sqrt( (2*S_ab + 1.0) * (2*S_de + 1.0) );
-
-         for(int a = 0;a < M/2;++a)
-            for(int b = 0;b < M/2;++b)
-               for(int c = 0;c < M/2;++c){
-
-                  hard = spin * (*this)(0,S_ab,a,b,a,S_de,c,b,c);
-
-                  if(a == b)
-                     hard *= std::sqrt(2.0);
-
-                  if(c == b)
-                     hard *= std::sqrt(2.0);
-
-                  ward += hard;
-
-               }
-
-      }
-
-   return ward;
-
-}
-
-ostream &operator<<(ostream &output,PPHM &pphm_p){
+ostream &operator<<(ostream &output,const PPHM &pphm_p){
 
    for(int S = 0;S < pphm_p.gnr();++S){
 

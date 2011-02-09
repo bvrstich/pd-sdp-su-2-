@@ -29,7 +29,7 @@ class SPM : public Matrix {
     * @param output The stream to which you are writing (e.g. cout)
     * @param spm_p de SPM you want to print
     */
-   friend ostream &operator<<(ostream &output,SPM &spm_p);
+   friend ostream &operator<<(ostream &output,const SPM &spm_p);
 
    public:
       
@@ -37,28 +37,28 @@ class SPM : public Matrix {
       SPM(int M,int N);
 
       //copy constructor
-      SPM(SPM &);
+      SPM(const SPM &);
 
       //TPM constructor
-      SPM(double ,TPM &);
+      SPM(double ,const TPM &);
 
       //PHM constructor
-      SPM(double ,PHM &);
+      SPM(double ,const PHM &);
 
       //destructor
       virtual ~SPM();
 
       using Matrix::operator=;
 
-      int gN();
+      int gN() const;
 
-      int gM();
+      int gM() const;
 
-      void bar(double, TPM &);
+      void bar(double, const TPM &);
 
-      void bar(double, PHM &);
+      void bar(double, const PHM &);
 
-      void bar(double, PPHM &);
+      void bar(double, const PPHM &);
 
    private:
 

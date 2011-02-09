@@ -56,7 +56,7 @@ EIG::EIG(SUP &SZ){
  * allocates the memory for the eigenvalues of a SUP object and copies the content of eig_c into it.
  * @param eig_c The input EIG that will be copied into this.
  */
-EIG::EIG(EIG &eig_c){
+EIG::EIG(const EIG &eig_c){
 
    this->N = eig_c.gN();
    this->M = eig_c.gM();
@@ -98,7 +98,7 @@ EIG::EIG(EIG &eig_c){
  * overload equality operator
  * @param eig_c object that will be copied into this.
  */
-EIG &EIG::operator=(EIG &eig_c){
+EIG &EIG::operator=(const EIG &eig_c){
 
    for(int i = 0;i < 2;++i)
       *v_tp[i] = *eig_c.v_tp[i];
@@ -184,7 +184,7 @@ void EIG::diagonalize(SUP &sup){
 
 }
 
-ostream &operator<<(ostream &output,EIG &eig_p){
+ostream &operator<<(ostream &output,const EIG &eig_p){
 
    for(int i = 0;i < 2;++i)
       std::cout << eig_p.tpv(i) << std::endl;
@@ -214,7 +214,7 @@ ostream &operator<<(ostream &output,EIG &eig_p){
 /**
  * @return nr of particles
  */
-int EIG::gN(){
+int EIG::gN() const{
 
    return N;
 
@@ -223,7 +223,7 @@ int EIG::gN(){
 /**
  * @return dimension of sp space
  */
-int EIG::gM(){
+int EIG::gM() const{
 
    return M;
 
@@ -240,6 +240,17 @@ BlockVector<TPM> &EIG::tpv(int i){
 
 }
 
+/** 
+ * get the BlockVector<TPM> object containing the eigenvalues of the TPM blocks P and Q: const version
+ * @param i == 0, the eigenvalues of the P block will be returned, i == 1, the eigenvalues of the Q block will be returned
+ * @return a BlockVector<TPM> object containing the desired eigenvalues
+ */
+const BlockVector<TPM> &EIG::tpv(int i) const{
+
+   return *v_tp[i];
+
+}
+
 #ifdef __G_CON
 
 /** 
@@ -247,6 +258,16 @@ BlockVector<TPM> &EIG::tpv(int i){
  * @return a BlockVector<PHM> object containing the desired eigenvalues
  */
 BlockVector<PHM> &EIG::phv(){
+
+   return *v_ph;
+
+}
+
+/** 
+ * get the BlockVector<PHM> object containing the eigenvalues of the PHM block G:const version
+ * @return a BlockVector<PHM> object containing the desired eigenvalues
+ */
+const BlockVector<PHM> &EIG::phv() const{
 
    return *v_ph;
 
@@ -266,6 +287,16 @@ BlockVector<DPM> &EIG::dpv(){
 
 }
 
+/** 
+ * get the BlockVector<DPM> object containing the eigenvalues of the DPM block T1 of the SUP matrix: const version
+ * @return a BlockVector<DPM> object containing the desired eigenvalues
+ */
+const BlockVector<DPM> &EIG::dpv() const{
+
+   return *v_dp;
+
+}
+
 #endif
 
 #ifdef __T2_CON
@@ -280,12 +311,22 @@ BlockVector<PPHM> &EIG::pphv(){
 
 }
 
+/** 
+ * get the BlockVector<PPHM> object containing the eigenvalues of the PPHM block T2 of the SUP matrix: const version
+ * @return a BlockVector<PPHM> object containing the desired eigenvalues
+ */
+const BlockVector<PPHM> &EIG::pphv() const{
+
+   return *v_pph;
+
+}
+
 #endif
 
 /**
  * @return total dimension of the EIG object
  */
-int EIG::gdim(){
+int EIG::gdim() const{
 
    return dim;
 
@@ -296,7 +337,7 @@ int EIG::gdim(){
  * @return the minimal element present in this EIG object.
  * watch out, only works when EIG is filled with the eigenvalues of a diagonalized SUP matrix
  */
-double EIG::min(){
+double EIG::min() const{
 
    //lowest eigenvalue of P block
    double ward = v_tp[0]->min();
@@ -337,7 +378,7 @@ double EIG::min(){
  * @return the maximum element present in this EIG object.
  * watch out, only works when EIG is filled with the eigenvalues of a diagonalized SUP matrix
  */
-double EIG::max(){
+double EIG::max() const{
 
    //highest eigenvalue of P block
    double ward = v_tp[0]->max();
@@ -378,7 +419,7 @@ double EIG::max(){
  * @return The deviation of the central path as calculated with the logarithmic barrierfunction, the EIG object is calculated
  * in SUP::center_dev.
  */
-double EIG::center_dev(){
+double EIG::center_dev() const{
 
    double sum = v_tp[0]->sum() + v_tp[1]->sum();
 
@@ -421,7 +462,7 @@ double EIG::center_dev(){
  * @param c_S = Tr (DS Z)/Tr (SZ): parameter calculated in SUP::line_search
  * @param c_Z = Tr (S DZ)/Tr (SZ): parameter calculated in SUP::line_search
  */
-double EIG::centerpot(double alpha,EIG &eigen_Z,double c_S,double c_Z){
+double EIG::centerpot(double alpha,const EIG &eigen_Z,double c_S,double c_Z) const{
 
    double ward = dim*log(1.0 + alpha*(c_S + c_Z));
 

@@ -31,7 +31,7 @@ class TPM : public BlockMatrix {
     * @param output The stream to which you are writing (e.g. cout)
     * @param tpm_p the TPM you want to print
     */
-   friend ostream &operator<<(ostream &output,TPM &tpm_p);
+   friend ostream &operator<<(ostream &output,const TPM &tpm_p);
 
    public:
       
@@ -39,7 +39,7 @@ class TPM : public BlockMatrix {
       TPM(int M,int N);
 
       //copy constructor
-      TPM(TPM &);
+      TPM(const TPM &);
 
       //destructor
       virtual ~TPM();
@@ -54,21 +54,21 @@ class TPM : public BlockMatrix {
       double operator()(int S,int a,int b,int c,int d) const;
 
       //geef N terug
-      int gN();
+      int gN() const;
 
       //geef M terug
-      int gM();
+      int gM() const;
 
       void hubbard(double U);
 
       //Q afbeelding en zijn inverse
-      void Q(int option,TPM &);
+      void Q(int option,const TPM &);
 
       //Q like afbeelding Q(A,B,C,tpm_d)
-      void Q(int option,double A,double B,double C,TPM &);
+      void Q(int option,double A,double B,double C,const TPM &);
 
       //overlapmatrix afbeelding en zijn inverse
-      void S(int option,TPM &);
+      void S(int option,const TPM &);
 
       void init();
 
@@ -79,42 +79,37 @@ class TPM : public BlockMatrix {
       void proj_Tr();
 
       //de hessiaan afbeelding:
-      void H(TPM &b,SUP &D);
+      void H(const TPM &b,const SUP &D);
 
       //los het stelsel op
-      int solve(TPM &b,SUP &D);
+      int solve(TPM &b,const SUP &D);
 
-      void min_unit(double scale);
-
-      void min_qunit(double scale);
-
-      void collaps(int option,SUP &);
+      void collaps(int option,const SUP &);
 
       void sp_pairing(double );
 
       void uncouple(const char *);
 
       //G down afbeelding
-      void G(PHM &);
+      void G(const PHM &);
 
       //trace one pair of indices of DPM
-      void bar(DPM &);
+      void bar(const DPM &);
 
       //T1 down
-      void T(DPM &);
+      void T(const DPM &);
 
       //trace last pair of indices of PPHM
-      void bar(PPHM &);
+      void bar(const PPHM &);
 
       //T2 down
-      void T(PPHM &);
+      void T(const PPHM &);
 
       //return the spin
-      double spin();
+      double spin() const;
 
       //input TPM from file
       void in_sp(const char *);
-
 
    private:
 

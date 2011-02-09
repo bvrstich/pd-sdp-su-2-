@@ -26,7 +26,7 @@ class PHM : public BlockMatrix {
     * @param output The stream to which you are writing (e.g. cout)
     * @param phm_p the PHM you want to print
     */
-   friend ostream &operator<<(ostream &output,PHM &phm_p);
+   friend ostream &operator<<(ostream &output,const PHM &phm_p);
 
    public:
       
@@ -34,7 +34,7 @@ class PHM : public BlockMatrix {
       PHM(int M,int N);
 
       //copy constructor
-      PHM(PHM &);
+      PHM(const PHM &);
 
       //destructor
       virtual ~PHM();
@@ -48,22 +48,21 @@ class PHM : public BlockMatrix {
       //change the numbers in sp mode
       double &operator()(int S,int a,int b,int c,int d);
 
-      //geef N terug
-      int gN();
+      //change the numbers in sp mode: read mode
+      double operator()(int S,int a,int b,int c,int d) const;
 
       //geef N terug
-      int gM();
+      int gN() const;
 
-      void G(TPM &);
+      //geef N terug
+      int gM() const;
 
-      double skew_trace();
-
-      void min_gunit(double scale);
+      void G(const TPM &);
 
       void uncouple(const char *filename);
 
       //trace the first pair of indices of a PPHM object
-      void bar(PPHM &);
+      void bar(const PPHM &);
 
       //input PHM from file
       void in_sp(const char *);

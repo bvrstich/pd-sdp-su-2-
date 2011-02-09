@@ -27,7 +27,7 @@ class BlockMatrix{
     * @param output The stream to which you are writing (e.g. cout)
     * @param blockmatrix_p the BlockMatrix you want to print
     */
-   friend ostream &operator<<(ostream &output,BlockMatrix &blockmatrix_p);
+   friend ostream &operator<<(ostream &output,const BlockMatrix &blockmatrix_p);
 
    public:
 
@@ -35,7 +35,7 @@ class BlockMatrix{
       BlockMatrix(int n);
 
       //copy constructor
-      BlockMatrix(BlockMatrix &);
+      BlockMatrix(const BlockMatrix &);
 
       //destructor
       virtual ~BlockMatrix();
@@ -44,22 +44,24 @@ class BlockMatrix{
 
       Matrix &operator[](int);
 
+      const Matrix &operator[](int) const;
+
       //overload equality operator
-      BlockMatrix &operator=(BlockMatrix &);
+      BlockMatrix &operator=(const BlockMatrix &);
 
       BlockMatrix &operator=(double );
 
       //overload += operator
-      BlockMatrix &operator+=(BlockMatrix &);
+      BlockMatrix &operator+=(const BlockMatrix &);
 
       //overload -= operator
-      BlockMatrix &operator-=(BlockMatrix &);
+      BlockMatrix &operator-=(const BlockMatrix &);
 
-      BlockMatrix &daxpy(double alpha,BlockMatrix &);
+      BlockMatrix &daxpy(double alpha,const BlockMatrix &);
 
       BlockMatrix &operator/=(double );
 
-      BlockMatrix &mprod(BlockMatrix &,BlockMatrix &);
+      BlockMatrix &mprod(const BlockMatrix &,const BlockMatrix &);
 
       //easy to change the numbers
       double &operator()(int block,int i,int j);
@@ -67,17 +69,15 @@ class BlockMatrix{
       //easy to access the numbers
       double operator()(int block,int i,int j) const;
 
-      int gnr();
+      int gnr() const;
 
-      int gdim(int);
+      int gdim(int) const;
 
-      int gdeg(int);
+      int gdeg(int) const;
 
-      double trace();
+      double trace() const;
 
-      //void diagonalize(double **eigenvalues);
-
-      double ddot(BlockMatrix &);
+      double ddot(const BlockMatrix &) const;
 
       void invert();
 
@@ -90,11 +90,11 @@ class BlockMatrix{
 
       void mdiag(double *diag);
 
-      void L_map(BlockMatrix &,BlockMatrix &);
+      void L_map(const BlockMatrix &,const BlockMatrix &);
 
       void symmetrize();
 
-      void out(const char *);
+      void out(const char *) const;
 
    private:
 

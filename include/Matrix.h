@@ -26,7 +26,7 @@ class Matrix{
     * @param output The stream to which you are writing (e.g. cout)
     * @param matrix_p de Matrix you want to print
     */
-   friend ostream &operator<<(ostream &output,Matrix &matrix_p);
+   friend ostream &operator<<(ostream &output,const Matrix &matrix_p);
 
    public:
 
@@ -34,7 +34,7 @@ class Matrix{
       Matrix(int n);
 
       //copy constructor
-      Matrix(Matrix &);
+      Matrix(const Matrix &);
 
       //construct with filename
       Matrix(const char *filename);
@@ -43,21 +43,21 @@ class Matrix{
       virtual ~Matrix();
 
       //overload equality operator
-      Matrix &operator=(Matrix &);
+      Matrix &operator=(const Matrix &);
 
       Matrix &operator=(double );
 
       //overload += operator
-      Matrix &operator+=(Matrix &);
+      Matrix &operator+=(const Matrix &);
 
       //overload -= operator
-      Matrix &operator-=(Matrix &);
+      Matrix &operator-=(const Matrix &);
 
-      Matrix &daxpy(double alpha,Matrix &);
+      Matrix &daxpy(double alpha,const Matrix &);
 
       Matrix &operator/=(double );
 
-      Matrix &mprod(Matrix &,Matrix &);
+      Matrix &mprod(const Matrix &,const Matrix &);
 
       //easy to change the numbers
       double &operator()(int i,int j);
@@ -68,11 +68,11 @@ class Matrix{
       //get the pointer to the matrix
       double **gMatrix();
 
-      int gn();
+      int gn() const;
 
-      double trace();
+      double trace() const;
 
-      double ddot(Matrix &);
+      double ddot(const Matrix &) const;
 
       void invert();
 
@@ -83,13 +83,13 @@ class Matrix{
       //positieve of negatieve vierkantswortel uit de matrix
       void sqrt(int option);
 
-      void mdiag(Vector &diag);
+      void mdiag(const Vector &diag);
 
-      void L_map(Matrix &,Matrix &);
+      void L_map(const Matrix &,const Matrix &);
 
       void symmetrize();
 
-      void out(const char*);
+      void out(const char*) const;
 
    private:
 

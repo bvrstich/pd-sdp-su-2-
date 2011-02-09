@@ -52,7 +52,7 @@ Vector::Vector(Matrix &matrix){
  * copy constructor 
  * @param vec_copy The vector you want to be copied into the object you are constructing
  */
-Vector::Vector(Vector &vec_copy){
+Vector::Vector(const Vector &vec_copy){
 
    this->n = vec_copy.n;
 
@@ -78,7 +78,7 @@ Vector::~Vector(){
  * overload the equality operator
  * @param vector_copy The vector you want to be copied into this
  */
-Vector &Vector::operator=(Vector &vector_copy){
+Vector &Vector::operator=(const Vector &vector_copy){
 
    int inc = 1;
 
@@ -105,7 +105,7 @@ Vector &Vector::operator=(double a){
  * overload the += operator for matrices
  * @param vector_pl The vector you want to add to this
  */
-Vector &Vector::operator+=(Vector &vector_pl){
+Vector &Vector::operator+=(const Vector &vector_pl){
 
    int inc = 1;
    double alpha = 1.0;
@@ -120,7 +120,7 @@ Vector &Vector::operator+=(Vector &vector_pl){
  * overload the -= operator for matrices
  * @param vector_pl The vector you want to deduct from this
  */
-Vector &Vector::operator-=(Vector &vector_pl){
+Vector &Vector::operator-=(const Vector &vector_pl){
 
    int inc = 1;
    double alpha = -1.0;
@@ -136,7 +136,7 @@ Vector &Vector::operator-=(Vector &vector_pl){
  * @param alpha the constant to multiply the vector_pl with
  * @param vector_pl the Vector to be multiplied by alpha and added to this
  */
-Vector &Vector::daxpy(double alpha,Vector &vector_pl){
+Vector &Vector::daxpy(double alpha,const Vector &vector_pl){
 
    int inc = 1;
 
@@ -174,11 +174,11 @@ double &Vector::operator[](int i){
 }
 
 /**
- * read access to your vector, view the number on index i
+ * read access to your vector, change the number on index i: const version
  * @param i row number
  * @return the entry on place i
  */
-double Vector::operator[](int i) const {
+double Vector::operator[](int i) const{
 
    return vector[i];
 
@@ -215,9 +215,18 @@ double *Vector::gVector(){
 }
 
 /**
+ * @return the underlying pointer to vector, useful for mkl and lapack applications: const version
+ */
+const double *Vector::gVector() const{
+
+   return vector;
+
+}
+
+/**
  * @return the dimension of the vector
  */
-int Vector::gn(){
+int Vector::gn() const{
 
    return n;
 
@@ -226,7 +235,7 @@ int Vector::gn(){
 /**
  * @return the sum of all the elements in the vector
  */
-double Vector::sum(){
+double Vector::sum() const{
 
    double ward = 0;
 
@@ -240,7 +249,7 @@ double Vector::sum(){
 /**
  * @return the logarithm of the product of all the elements in the vector (so the sum of all the logarithms)
  */
-double Vector::log_product(){
+double Vector::log_product() const{
 
    double ward = 0;
 
@@ -255,7 +264,7 @@ double Vector::log_product(){
  * @return inproduct of (*this) vector with vector_i
  * @param vector_i input vector
  */
-double Vector::ddot(Vector &vector_i){
+double Vector::ddot(const Vector &vector_i)const{
 
    int inc = 1;
 
@@ -287,7 +296,7 @@ void Vector::fill_Random(){
 
 }
 
-ostream &operator<<(ostream &output,Vector &vector_p){
+ostream &operator<<(ostream &output,const Vector &vector_p){
 
    for(int i = 0;i < vector_p.gn();++i)
       output << i << "\t" << vector_p[i] << endl;
@@ -300,7 +309,7 @@ ostream &operator<<(ostream &output,Vector &vector_p){
  * @return the minimal element present in this Vector object.
  * watch out, only works when Vector is filled with the eigenvalues of a diagonalized Matrix object
  */
-double Vector::min(){
+double Vector::min() const {
 
    return vector[0];
 
@@ -310,7 +319,7 @@ double Vector::min(){
  * @return the maximal element present in this Vector object.
  * watch out, only works when Vector is filled with the eigenvalues of a diagonalized Matrix object
  */
-double Vector::max(){
+double Vector::max() const {
 
    return vector[n - 1];
 
@@ -320,7 +329,7 @@ double Vector::max(){
  * A function needed in the calcalation of the distance from the center, see EIG::centerpot
  *@return the result of the function
  */
-double Vector::centerpot(double alpha){
+double Vector::centerpot(double alpha) const {
 
    double ward = 0.0;
 

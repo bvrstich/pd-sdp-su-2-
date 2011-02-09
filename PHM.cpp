@@ -44,7 +44,7 @@ PHM::PHM(int M,int N) : BlockMatrix(2) {
  * if counter == 0, allocates and constructs the lists containing the relationship between sp and ph basis.
  * @param phm_c PHM to be copied into (*this)
  */
-PHM::PHM(PHM &phm_c) : BlockMatrix(phm_c){
+PHM::PHM(const PHM &phm_c) : BlockMatrix(phm_c){
 
    this->N = phm_c.gN();
    this->M = phm_c.gM();
@@ -146,7 +146,25 @@ double &PHM::operator()(int S,int a,int b,int c,int d){
 
 }
 
-ostream &operator<<(ostream &output,PHM &phm_p){
+/**
+ * access the elements of the matrix in sp mode: read only mode
+ * @param S The spin of the block you want to access
+ * @param a first sp index that forms the ph row index i in block S together with b
+ * @param b second sp index that forms the ph row index i in block S together with a
+ * @param c first sp index that forms the ph column index j in block S together with d
+ * @param d second sp index that forms the ph column index j in block S together with c
+ * @return the number on place PHM(S,i,j)
+ */
+double PHM::operator()(int S,int a,int b,int c,int d) const{
+
+   int i = s2ph[a][b];
+   int j = s2ph[c][d];
+
+   return (*this)(S,i,j);
+
+}
+
+ostream &operator<<(ostream &output,const PHM &phm_p){
 
    for(int S = 0;S < phm_p.gnr();++S){
 
@@ -173,7 +191,7 @@ ostream &operator<<(ostream &output,PHM &phm_p){
 /**
  * @return number of particles
  */
-int PHM::gN(){
+int PHM::gN() const{
 
    return N;
 
@@ -182,7 +200,7 @@ int PHM::gN(){
 /**
  * @return number of single particle oribals
  */
-int PHM::gM(){
+int PHM::gM() const{
 
    return M;
 
@@ -192,7 +210,7 @@ int PHM::gM(){
  * The G map, maps a TPM object on a PHM object.
  * @param tpm input TPM
  */
-void PHM::G(TPM &tpm){
+void PHM::G(const TPM &tpm){
 
    //construct the SPM corresponding to the TPM
    SPM spm(1.0/(N - 1.0),tpm);
@@ -235,49 +253,10 @@ void PHM::G(TPM &tpm){
 }
 
 /**
- * Calculate the skew trace, defined as:\n\n
- * sum_{a s_a b s_b} PHM(a s_a,a s_a,b s_b,b s_b) = 2 * sum_{ab} PHM(0,a,a,b,b)
- * @return the skew trace
- */
-double PHM::skew_trace(){
-
-   double ward = 0.0;
-
-   for(int a = 0;a < M/2;++a)
-      for(int b = 0;b < M/2;++b)
-         ward += (*this)(0,a,a,b,b);
-
-   return 2.0*ward;
-
-}
-
-/**
- * Deduct from this the G-map of the unit matrix times a constant (scale)\n\n
- * this -= scale* G(1) \n\n
- * see notes primal_dual.pdf for more information.
- * @param scale the constant
- */
-void PHM::min_gunit(double scale){
-
-   for(int a = 0;a < M/2;++a)
-      for(int b = 0;b < M/2;++b)
-         (*this)(0,a,a,b,b) -= 2.0*scale;
-
-   double g = (M - N)/(N - 1.0);
-
-   scale *= g;
-
-   for(int S = 0;S < 2;++S)
-      for(int i = 0;i < this->gdim(S);++i)
-         (*this)(S,i,i) -= scale;
-
-}
-
-/**
  * The bar function that maps a PPHM object onto a PHM object by tracing away the first pair of incdices of the PPHM
  * @param pphm Input PPHM object
  */
-void PHM::bar(PPHM &pphm){
+void PHM::bar(const PPHM &pphm){
 
    int a,b,c,d;
 

@@ -24,7 +24,7 @@ SPM::SPM(int M,int N) : Matrix(M/2) {
  * copy constructor
  * @param spm_copy content of this matrix will be copied into the constructed matrix
  */
-SPM::SPM(SPM &spm_copy) : Matrix(spm_copy) {
+SPM::SPM(const SPM &spm_copy) : Matrix(spm_copy) {
 
    this->M = spm_copy.gM();
    this->N = spm_copy.gN();
@@ -36,7 +36,7 @@ SPM::SPM(SPM &spm_copy) : Matrix(spm_copy) {
  * @param scale the factor u want the SPM to be scaled with (1/N-1 for normal sp density matrix)
  * @param tpm the TPM out of which the SPM will be initiated.
  */
-SPM::SPM(double scale,TPM &tpm) : Matrix(tpm.gM()/2) {
+SPM::SPM(double scale,const TPM &tpm) : Matrix(tpm.gM()/2) {
 
    this->M = tpm.gM();
    this->N = tpm.gN();
@@ -50,7 +50,7 @@ SPM::SPM(double scale,TPM &tpm) : Matrix(tpm.gM()/2) {
  * @param scale the factor u want the SPM to be scaled with
  * @param phm the PHM out of which the SPM will be initiated.
  */
-SPM::SPM(double scale,PHM &phm) : Matrix(phm.gM()/2) {
+SPM::SPM(double scale,const PHM &phm) : Matrix(phm.gM()/2) {
 
    this->M = phm.gM();
    this->N = phm.gN();
@@ -69,7 +69,7 @@ SPM::~SPM(){
 /**
  * @return nr of particles
  */
-int SPM::gN(){
+int SPM::gN() const{
 
    return N;
 
@@ -78,13 +78,13 @@ int SPM::gN(){
 /**
  * @return dimension of sp space
  */
-int SPM::gM(){
+int SPM::gM() const{
 
    return M;
 
 }
 
-ostream &operator<<(ostream &output,SPM &spm_p){
+ostream &operator<<(ostream &output,const SPM &spm_p){
 
    for(int i = 0;i < spm_p.gn();++i)
       for(int j = 0;j < spm_p.gn();++j)
@@ -99,7 +99,7 @@ ostream &operator<<(ostream &output,SPM &spm_p){
  * @param scale the factor u want the SPM to be scaled with (1/N-1 for normal sp density matrix)
  * @param tpm the TPM out of which the SPM will be filled
  */
-void SPM::bar(double scale,TPM &tpm){
+void SPM::bar(double scale,const TPM &tpm){
 
    //hulpvariabele
    double ward;
@@ -141,7 +141,7 @@ void SPM::bar(double scale,TPM &tpm){
  * @param scale the factor u want the SPM to be scaled with
  * @param phm the PHM out of which the SPM will be filled
  */
-void SPM::bar(double scale,PHM &phm){
+void SPM::bar(double scale,const PHM &phm){
 
    for(int a = 0;a < M/2;++a)
       for(int c = a;c < M/2;++c){
@@ -170,7 +170,7 @@ void SPM::bar(double scale,PHM &phm){
  * @param scale the scalefactor
  * @param pphm Input PPHM object
  */
-void SPM::bar(double scale,PPHM &pphm){
+void SPM::bar(double scale,const PPHM &pphm){
 
    for(int a = 0;a < M/2;++a)
       for(int c = a;c < M/2;++c){

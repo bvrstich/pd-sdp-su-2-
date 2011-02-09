@@ -5,6 +5,7 @@
 using std::ostream;
 using std::ofstream;
 using std::ifstream;
+using std::cout;
 using std::endl;
 using std::ios;
 
@@ -44,7 +45,7 @@ TPM::TPM(int M,int N) : BlockMatrix(2) {
  * if counter == 0, the lists containing the relationship between sp and tp basis.
  * @param tpm_c object that will be copied into this.
  */
-TPM::TPM(TPM &tpm_c) : BlockMatrix(tpm_c){
+TPM::TPM(const TPM &tpm_c) : BlockMatrix(tpm_c){
 
    this->N = tpm_c.gN();
    this->M = tpm_c.gM();
@@ -215,7 +216,7 @@ double TPM::operator()(int S,int a,int b,int c,int d) const{
 
 }
 
-ostream &operator<<(ostream &output,TPM &tpm_p){
+ostream &operator<<(ostream &output,const TPM &tpm_p){
 
    for(int S = 0;S < 2;++S){
 
@@ -242,7 +243,7 @@ ostream &operator<<(ostream &output,TPM &tpm_p){
 /**
  * @return number of particles
  */
-int TPM::gN(){
+int TPM::gN() const{
 
    return N;
 
@@ -251,7 +252,7 @@ int TPM::gN(){
 /**
  * @return number of sp orbitals
  */
-int TPM::gM(){
+int TPM::gM() const{
 
    return M;
 
@@ -323,7 +324,7 @@ void TPM::hubbard(double U){
  * @param option = 1, regular Q map , = -1 inverse Q map
  * @param tpm_d the TPM of which the Q map is taken and saved in this.
  */
-void TPM::Q(int option,TPM &tpm_d){
+void TPM::Q(int option,const TPM &tpm_d){
 
    double a = 1;
    double b = 1.0/(N*(N - 1.0));
@@ -341,7 +342,7 @@ void TPM::Q(int option,TPM &tpm_d){
  * @param C factor in front of the single particle piece of the map
  * @param tpm_d the TPM of which the Q-like map is taken and saved in this.
  */
-void TPM::Q(int option,double A,double B,double C,TPM &tpm_d){
+void TPM::Q(int option,double A,double B,double C,const TPM &tpm_d){
 
    //for inverse
    if(option == -1){
@@ -467,6 +468,14 @@ void TPM::set_unit(){
  */
 void TPM::set_S_2(){
 
+   *this = 0.0;
+
+   for(int i = 0;i < this->gdim(0);++i)
+      (*this)(0,i,i) = -1.5 * (N - 2.0)/(N - 1.0);
+
+   for(int i = 0;i < this->gdim(1);++i)
+      (*this)(1,i,i) = -1.5 * (N - 2.0)/(N - 1.0) + 2.0;
+
 }
 
 /**
@@ -476,7 +485,9 @@ void TPM::proj_Tr(){
 
    double ward = (2.0 * this->trace())/(M*(M - 1));
 
-   this->min_unit(ward);
+   for(int B = 0;B < 2;++B)
+      for(int i = 0;i < gdim(B);++i)
+         (*this)(B,i,i) -= ward;
 
 }
 
@@ -487,7 +498,7 @@ void TPM::proj_Tr(){
  * @param b TPM domain matrix, hessian will act on it and the image will be put in this
  * @param D SUP matrix that defines the structure of the hessian map. (see primal-dual.pdf for more info)
  */
-void TPM::H(TPM &b,SUP &D){
+void TPM::H(const TPM &b,const SUP &D){
 
    this->L_map(D.tpm(0),b);
 
@@ -565,7 +576,7 @@ void TPM::H(TPM &b,SUP &D){
  * @param D SUP matrix that defines the structure of the hessian
  * @return return number of iterations needed to converge to the desired accuracy
  */
-int TPM::solve(TPM &b,SUP &D){
+int TPM::solve(TPM &b,const SUP &D){
 
    *this = 0;
 
@@ -617,7 +628,7 @@ int TPM::solve(TPM &b,SUP &D){
  * @param option = 1 direct overlapmatrix-map is used , = -1 inverse overlapmatrix map is used
  * @param tpm_d the input TPM
  */
-void TPM::S(int option,TPM &tpm_d){
+void TPM::S(int option,const TPM &tpm_d){
 
    double a = 1.0;
    double b = 0.0;
@@ -659,40 +670,12 @@ void TPM::S(int option,TPM &tpm_d){
 }
 
 /**
- * Deduct the unitmatrix times a constant (scale) from this.\n\n
- * this -= scale* 1
- * @param scale the constant
- */
-void TPM::min_unit(double scale){
-
-   for(int S = 0;S < 2;++S)
-      for(int i = 0;i < this->gdim(S);++i)
-         (*this)(S,i,i) -= scale;
-
-}
-
-/**
- * Deduct from this - de Q-map of the unit-matrix  times a constante (scale):\n\n
- * this -= scale* Q(1)
- * @param scale the constant
- */
-void TPM::min_qunit(double scale){
-
-   double q = 1.0 + (M - 2*N)*(M - 1.0)/(N*(N - 1.0));
-
-   scale *= q;
-
-   this->min_unit(scale);
-
-}
-
-/**
  * Collaps a SUP matrix S onto a TPM matrix like this:\n\n
  * sum_i Tr (S u^i)f^i = this
  * @param option = 0, project onto full symmetric matrix space, = 1 project onto traceless symmetric matrix space
  * @param S input SUP
  */
-void TPM::collaps(int option,SUP &S){
+void TPM::collaps(int option,const SUP &S){
 
    *this = S.tpm(0);
 
@@ -870,7 +853,7 @@ void TPM::uncouple(const char *filename){
  * The G down map, maps a PHM object onto a TPM object using the G map.
  * @param phm input PHM
  */
-void TPM::G(PHM &phm){
+void TPM::G(const PHM &phm){
 
    SPM spm(1.0/(N - 1.0),phm);
 
@@ -932,7 +915,7 @@ void TPM::G(PHM &phm){
  * Construct a spincoupled TPM matrix out of a spincoupled DPM matrix, for the definition and derivation see symmetry.pdf
  * @param dpm input DPM
  */
-void TPM::bar(DPM &dpm){
+void TPM::bar(const DPM &dpm){
 
    int a,b,c,d;
 
@@ -995,7 +978,7 @@ void TPM::bar(DPM &dpm){
  * The T1-down map that maps a DPM on TPM. This is just a Q-like map using the TPM::bar (dpm) as input.
  * @param dpm the input DPM matrix
  */
-void TPM::T(DPM &dpm){
+void TPM::T(const DPM &dpm){
 
    TPM tpm(M,N);
    tpm.bar(dpm);
@@ -1012,7 +995,7 @@ void TPM::T(DPM &dpm){
  * The bar function that maps a PPHM object onto a TPM object by tracing away the last pair of incdices of the PPHM
  * @param pphm Input PPHM object
  */
-void TPM::bar(PPHM &pphm){
+void TPM::bar(const PPHM &pphm){
 
    int a,b,c,d;
 
@@ -1054,7 +1037,7 @@ void TPM::bar(PPHM &pphm){
  * The spincoupled T2-down map that maps a PPHM on a TPM object.
  * @param pphm Input PPHM object
  */
-void TPM::T(PPHM &pphm){
+void TPM::T(const PPHM &pphm){
 
    //first make the bar tpm
    TPM tpm(M,N);
@@ -1131,7 +1114,7 @@ void TPM::T(PPHM &pphm){
 /**
  * @return The expectation value of the total spin for the TPM.
  */
-double TPM::spin(){
+double TPM::spin() const{
 
    double ward = 0.0;
 

@@ -25,7 +25,7 @@ class DPM : public BlockMatrix {
     * @param output The stream to which you are writing (e.g. cout)
     * @param dpm_p the DPM you want to print
     */
-   friend ostream &operator<<(ostream &output,DPM &dpm_p);
+   friend ostream &operator<<(ostream &output,const DPM &dpm_p);
 
    public:
       
@@ -33,7 +33,7 @@ class DPM : public BlockMatrix {
       DPM(int M,int N);
 
       //copy constructor
-      DPM(DPM &);
+      DPM(const DPM &);
 
       //destructor
       virtual ~DPM();
@@ -50,22 +50,19 @@ class DPM : public BlockMatrix {
       int get_inco(int S,int S_ab,int a,int b,int c,int *i,double *coef) const;
 
       //geef N terug
-      int gN();
+      int gN() const;
 
       //geef M terug
-      int gM();
+      int gM() const;
 
       //generalized T1 map
-      void T(double,double,double,TPM &);
+      void T(double,double,double,const TPM &);
 
       //maak een DPM van een TPM via de T1 conditie
-      void T(TPM &);
+      void T(const TPM &);
 
       //maak een DPM van een TPM via de hat functie
-      void hat(TPM &);
-
-      //deduct scale times T1(1) matrix
-      void min_tunit(double scale);
+      void hat(const TPM &);
 
       //input DPM from file
       void in_sp(const char *);

@@ -29,7 +29,7 @@ Matrix::Matrix(int n){
  * copy constructor 
  * @param mat_copy The matrix you want to be copied into the object you are constructing
  */
-Matrix::Matrix(Matrix &mat_copy){
+Matrix::Matrix(const Matrix &mat_copy){
 
    this->n = mat_copy.n;
 
@@ -85,7 +85,7 @@ Matrix::~Matrix(){
  * overload the equality operator
  * @param matrix_copy The matrix you want to be copied into this
  */
-Matrix &Matrix::operator=(Matrix &matrix_copy){
+Matrix &Matrix::operator=(const Matrix &matrix_copy){
 
    int dim = n*n;
    int incx = 1;
@@ -115,7 +115,7 @@ Matrix &Matrix::operator=(double a){
  * overload the += operator for matrices
  * @param matrix_pl The matrix you want to add to this
  */
-Matrix &Matrix::operator+=(Matrix &matrix_pl){
+Matrix &Matrix::operator+=(const Matrix &matrix_pl){
 
    int dim = n*n;
    int inc = 1;
@@ -131,7 +131,7 @@ Matrix &Matrix::operator+=(Matrix &matrix_pl){
  * overload the -= operator for matrices
  * @param matrix_pl The matrix you want to deduct from this
  */
-Matrix &Matrix::operator-=(Matrix &matrix_pl){
+Matrix &Matrix::operator-=(const Matrix &matrix_pl){
 
    int dim = n*n;
    int inc = 1;
@@ -148,7 +148,7 @@ Matrix &Matrix::operator-=(Matrix &matrix_pl){
  * @param alpha the constant to multiply the matrix_pl with
  * @param matrix_pl the Matrix to be multiplied by alpha and added to this
  */
-Matrix &Matrix::daxpy(double alpha,Matrix &matrix_pl){
+Matrix &Matrix::daxpy(double alpha,const Matrix &matrix_pl){
 
    int dim = n*n;
    int inc = 1;
@@ -213,7 +213,7 @@ double **Matrix::gMatrix(){
 /**
  * @return the dimension of the matrix
  */
-int Matrix::gn(){
+int Matrix::gn() const{
 
    return n;
 
@@ -222,7 +222,7 @@ int Matrix::gn(){
 /**
  * @return the trace of the matrix:
  */
-double Matrix::trace(){
+double Matrix::trace() const{
 
    double ward = 0;
 
@@ -237,7 +237,7 @@ double Matrix::trace(){
  * @return inproduct of (*this) matrix with matrix_i, defined as Tr (A B)
  * @param matrix_i input matrix
  */
-double Matrix::ddot(Matrix &matrix_i){
+double Matrix::ddot(const Matrix &matrix_i) const{
 
    int dim = n*n;
    int inc = 1;
@@ -330,12 +330,17 @@ void Matrix::sqrt(int option){
  * Multiply this matrix with diagonal matrix
  * @param diag Diagonal matrix to multiply with this, has to be allocated on matrix dimension.
  */
-void Matrix::mdiag(Vector &diag){
+void Matrix::mdiag(const Vector &diag){
 
    int inc = 1;
 
-   for(int i = 0;i < n;++i)
-      dscal_(&n,&diag[i],matrix[i],&inc);
+   for(int i = 0;i < n;++i){
+
+      double scal = diag[i];
+
+      dscal_(&n,&scal,matrix[i],&inc);
+
+   }
 
 }
 
@@ -345,7 +350,7 @@ void Matrix::mdiag(Vector &diag){
  * @param map matrix that will be multiplied to the left en to the right of matrix object
  * @param object central matrix
  */
-void Matrix::L_map(Matrix &map,Matrix &object){
+void Matrix::L_map(const Matrix &map,const Matrix &object){
    
    char side = 'L';
    char uplo = 'U';
@@ -373,7 +378,7 @@ void Matrix::L_map(Matrix &map,Matrix &object){
  * @param A left matrix
  * @param B right matrix
  */
-Matrix &Matrix::mprod(Matrix &A, Matrix &B){
+Matrix &Matrix::mprod(const Matrix &A,const Matrix &B){
 
    char trans = 'N';
 
@@ -397,7 +402,7 @@ void Matrix::symmetrize(){
 
 }
 
-ostream &operator<<(ostream &output,Matrix &matrix_p){
+ostream &operator<<(ostream &output,const Matrix &matrix_p){
 
    for(int i = 0;i < matrix_p.gn();++i)
       for(int j = 0;j < matrix_p.gn();++j)
@@ -411,7 +416,7 @@ ostream &operator<<(ostream &output,Matrix &matrix_p){
  * print the matrix in a file with name and location filename
  * @param filename char with name and location
  */
-void Matrix::out(const char *filename){
+void Matrix::out(const char *filename) const{
 
    ofstream output(filename);
    output.precision(10);

@@ -37,7 +37,7 @@ BlockMatrix::BlockMatrix(int nr){
  * copy constructor, make sure the input matrix and all the blocks have been allocated and filled before the copying
  * @param blockmat_copy The blockmatrix you want to be copied into the object you are constructing
  */
-BlockMatrix::BlockMatrix(BlockMatrix &blockmat_copy){
+BlockMatrix::BlockMatrix(const BlockMatrix &blockmat_copy){
 
    this->nr = blockmat_copy.nr;
 
@@ -111,10 +111,22 @@ Matrix &BlockMatrix::operator[](int block){
 }
 
 /**
+ * [] overloaded, will return a reference to the block block in the blockmatrix: const version
+ * @param block index of the block to be returned
+ * @return A reference to the Matrix object located on blockmatrix[block].
+ */
+const Matrix &BlockMatrix::operator[](int block) const{
+   
+   return *blockmatrix[block];
+
+}
+
+
+/**
  * overload the equality operator: Make sure the blocks in both matrices have been allocated to the same dimensions and have the same degeneracy!
  * @param blockmat_copy The matrix you want to be copied into this
  */
-BlockMatrix &BlockMatrix::operator=(BlockMatrix &blockmat_copy){
+BlockMatrix &BlockMatrix::operator=(const BlockMatrix &blockmat_copy){
 
    for(int i = 0;i < nr;++i)
       *blockmatrix[i] = blockmat_copy[i];
@@ -140,7 +152,7 @@ BlockMatrix &BlockMatrix::operator=(double a){
  * overload the += operator for matrices
  * @param blockmat_pl The matrix you want to add to this
  */
-BlockMatrix &BlockMatrix::operator+=(BlockMatrix &blockmat_pl){
+BlockMatrix &BlockMatrix::operator+=(const BlockMatrix &blockmat_pl){
 
    for(int i = 0;i < nr;++i)
       *blockmatrix[i] += blockmat_pl[i];
@@ -153,7 +165,7 @@ BlockMatrix &BlockMatrix::operator+=(BlockMatrix &blockmat_pl){
  * overload the -= operator for matrices
  * @param blockmat_pl The matrix you want to deduct from this
  */
-BlockMatrix &BlockMatrix::operator-=(BlockMatrix &blockmat_pl){
+BlockMatrix &BlockMatrix::operator-=(const BlockMatrix &blockmat_pl){
 
    for(int i = 0;i < nr;++i)
       *blockmatrix[i] -= blockmat_pl[i];
@@ -167,7 +179,7 @@ BlockMatrix &BlockMatrix::operator-=(BlockMatrix &blockmat_pl){
  * @param alpha the constant to multiply the matrix_pl with
  * @param blockmat_pl the BlockMatrix to be multiplied by alpha and added to this
  */
-BlockMatrix &BlockMatrix::daxpy(double alpha,BlockMatrix &blockmat_pl){
+BlockMatrix &BlockMatrix::daxpy(double alpha,const BlockMatrix &blockmat_pl){
 
    for(int i = 0;i < nr;++i)
       blockmatrix[i]->daxpy(alpha,blockmat_pl[i]);
@@ -217,7 +229,7 @@ double BlockMatrix::operator()(int block,int i,int j) const {
 /**
  * @return the nr of blocks
  */
-int BlockMatrix::gnr(){
+int BlockMatrix::gnr() const{
 
    return nr;
 
@@ -226,7 +238,7 @@ int BlockMatrix::gnr(){
 /**
  * @return the dimension of the Matrix on the block with index i
  */
-int BlockMatrix::gdim(int i){
+int BlockMatrix::gdim(int i) const{
 
    return dim[i];
 
@@ -235,7 +247,7 @@ int BlockMatrix::gdim(int i){
 /**
  * @return the degeneracy of the block with index i
  */
-int BlockMatrix::gdeg(int i){
+int BlockMatrix::gdeg(int i) const{
 
    return degen[i];
 
@@ -244,7 +256,7 @@ int BlockMatrix::gdeg(int i){
 /**
  * @return the trace of the matrix, each block matrix is weighed with its degeneracy.
  */
-double BlockMatrix::trace(){
+double BlockMatrix::trace() const{
 
    double ward = 0;
 
@@ -259,7 +271,7 @@ double BlockMatrix::trace(){
  * @return inproduct of (*this) blockmatrix with blockmatrix_in, defined as Tr (A B)
  * @param blockmatrix_in input matrix
  */
-double BlockMatrix::ddot(BlockMatrix &blockmatrix_in){
+double BlockMatrix::ddot(const BlockMatrix &blockmatrix_in) const{
 
    double ward = 0.0;
 
@@ -318,7 +330,7 @@ void BlockMatrix::sqrt(int option){
  * @param map BlockMatrix that will be multiplied to the left en to the right of matrix object
  * @param object central BlockMatrix
  */
-void BlockMatrix::L_map(BlockMatrix &map,BlockMatrix &object){
+void BlockMatrix::L_map(const BlockMatrix &map,const BlockMatrix &object){
 
    for(int i = 0;i < nr;++i)
       blockmatrix[i]->L_map(map[i],object[i]);
@@ -330,7 +342,7 @@ void BlockMatrix::L_map(BlockMatrix &map,BlockMatrix &object){
  * @param A left matrix
  * @param B right matrix
  */
-BlockMatrix &BlockMatrix::mprod(BlockMatrix &A, BlockMatrix &B){
+BlockMatrix &BlockMatrix::mprod(const BlockMatrix &A, const BlockMatrix &B){
 
    for(int i = 0;i < nr;++i)
       blockmatrix[i]->mprod(A[i],B[i]);
@@ -349,7 +361,7 @@ void BlockMatrix::symmetrize(){
 
 }
 
-ostream &operator<<(ostream &output,BlockMatrix &blockmatrix_p){
+ostream &operator<<(ostream &output,const BlockMatrix &blockmatrix_p){
 
    for(int i = 0;i < blockmatrix_p.nr;++i){
 
@@ -368,7 +380,7 @@ ostream &operator<<(ostream &output,BlockMatrix &blockmatrix_p){
  * Output the Blockmatrix to a file with name filename
  * @param filename string with filename
  */
-void BlockMatrix::out(const char *filename){
+void BlockMatrix::out(const char *filename) const{
 
    ofstream output(filename);
 

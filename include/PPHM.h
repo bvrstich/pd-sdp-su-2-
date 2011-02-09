@@ -25,7 +25,7 @@ class PPHM : public BlockMatrix {
     * @param output The stream to which you are writing (e.g. cout)
     * @param pphm_p the PPHM you want to print
     */
-   friend ostream &operator<<(ostream &output,PPHM &pphm_p);
+   friend ostream &operator<<(ostream &output,const PPHM &pphm_p);
 
    public:
       
@@ -33,7 +33,7 @@ class PPHM : public BlockMatrix {
       PPHM(int M,int N);
 
       //copy constructor
-      PPHM(PPHM &);
+      PPHM(const PPHM &);
 
       //destructor
       virtual ~PPHM();
@@ -50,17 +50,13 @@ class PPHM : public BlockMatrix {
       static int get_inco(int S,int S_ab,int a,int b,int c,int &i);
 
       //geef N terug
-      int gN();
+      int gN() const;
 
       //geef M terug
-      int gM();
+      int gM() const;
 
       //maak een PPHM van een TPM via de T2 conditie
-      void T(TPM &);
-
-      void min_tunit(double );
-
-      double skew_trace();
+      void T(const TPM &);
 
       //input PPHM from file
       void in_sp(const char *);

@@ -63,7 +63,7 @@ SUP::SUP(int M,int N){
  * input SUP SZ_c into it.
  * @param SZ_c input SUP
  */
-SUP::SUP(SUP &SZ_c){
+SUP::SUP(const SUP &SZ_c){
 
    this->M = SZ_c.M;
    this->N = SZ_c.N;
@@ -150,7 +150,7 @@ SUP::~SUP(){
  * Overload += operator
  * @param SZ_pl The SUP matrix that has to be added to this
  */
-SUP &SUP::operator+=(SUP &SZ_pl){
+SUP &SUP::operator+=(const SUP &SZ_pl){
 
    for(int i = 0;i < 2;++i)
       (*SZ_tp[i]) += (*SZ_pl.SZ_tp[i]);
@@ -181,7 +181,7 @@ SUP &SUP::operator+=(SUP &SZ_pl){
  * Overload -= operator
  * @param SZ_pl The SUP that will be deducted from this
  */
-SUP &SUP::operator-=(SUP &SZ_pl){
+SUP &SUP::operator-=(const SUP &SZ_pl){
 
    for(int i = 0;i < 2;++i)
       (*SZ_tp[i]) -= (*SZ_pl.SZ_tp[i]);
@@ -212,7 +212,7 @@ SUP &SUP::operator-=(SUP &SZ_pl){
  * Overload equality operator, copy SZ_c into this
  * @param SZ_c SUP_PQ to be copied into this
  */
-SUP &SUP::operator=(SUP &SZ_c){
+SUP &SUP::operator=(const SUP &SZ_c){
 
    (*SZ_tp[0]) = (*SZ_c.SZ_tp[0]);
    (*SZ_tp[1]) = (*SZ_c.SZ_tp[1]);
@@ -281,12 +281,31 @@ TPM &SUP::tpm(int i){
 
 }
 
+/**
+ * @param i which block you want to have the pointer to. const version
+ * @return pointer to the individual TPM blocks: SZ_tp[i]
+ */
+const TPM &SUP::tpm(int i) const{
+
+   return *SZ_tp[i];
+
+}
+
 #ifdef __G_CON
 
 /**
  * @return pointer to the PHM block: SZ_ph
  */
 PHM &SUP::phm(){
+
+   return *SZ_ph;
+
+}
+
+/**
+ * @return pointer to the PHM block: SZ_ph. const version
+ */
+const PHM &SUP::phm() const{
 
    return *SZ_ph;
 
@@ -305,6 +324,15 @@ DPM &SUP::dpm(){
 
 }
 
+/**
+ * @return pointer to the DPM block: SZ_dp. const version
+ */
+const DPM &SUP::dpm() const{
+
+   return *SZ_dp;
+
+}
+
 #endif
 
 #ifdef __T2_CON
@@ -313,6 +341,15 @@ DPM &SUP::dpm(){
  * @return pointer to the PPHM block: SZ_pph
  */
 PPHM &SUP::pphm(){
+
+   return *SZ_pph;
+
+}
+
+/**
+ * @return pointer to the PPHM block: SZ_pph. const version
+ */
+const PPHM &SUP::pphm() const{
 
    return *SZ_pph;
 
@@ -331,7 +368,7 @@ void SUP::init_S(){
 
 }
 
-ostream &operator<<(ostream &output,SUP &SZ_p){
+ostream &operator<<(ostream &output,const SUP &SZ_p){
 
    output << (*SZ_p.SZ_tp[0]) << std::endl;
    output << (*SZ_p.SZ_tp[1]);
@@ -392,21 +429,22 @@ void SUP::fill_Random(){
 /**
  * Initialisation for dual SUP matrix Z, see primal_dual.pdf for info.
  */
-void SUP::init_Z(double alpha,TPM &ham,SUP &u_0){
+void SUP::init_Z(double alpha,const TPM &ham,const SUP &u_0){
 
    this->fill_Random();
 
-   this->proj_C(ham);
-
    //nog een eenheidsmatrix maal constante bijtellen zodat Z positief definiet is:
    this->daxpy(alpha,u_0); 
+
+   //en dan projecteren op de juist ruimte.
+   this->proj_C(ham);
 
 }
 
 /**
  * @return number of particles
  */
-int SUP::gN() {
+int SUP::gN() const{
 
    return N;
 
@@ -415,7 +453,7 @@ int SUP::gN() {
 /**
  * @return dimension of sp space
  */
-int SUP::gM(){
+int SUP::gM() const{
 
    return M;
 
@@ -424,7 +462,7 @@ int SUP::gM(){
 /**
  * @return dimension of tp space
  */
-int SUP::gn_tp(){
+int SUP::gn_tp() const{
 
    return n_tp;
 
@@ -435,7 +473,7 @@ int SUP::gn_tp(){
 /**
  * @return dimension of ph space
  */
-int SUP::gn_ph(){
+int SUP::gn_ph() const{
 
    return n_ph;
 
@@ -448,7 +486,7 @@ int SUP::gn_ph(){
 /**
  * @return dimension of dp space
  */
-int SUP::gn_dp(){
+int SUP::gn_dp() const{
 
    return n_dp;
 
@@ -461,7 +499,7 @@ int SUP::gn_dp(){
 /**
  * @return dimension of pph space
  */
-int SUP::gn_pph(){
+int SUP::gn_pph() const{
 
    return n_pph;
 
@@ -472,7 +510,7 @@ int SUP::gn_pph(){
 /**
  * @return total dimension of SUP (carrier) space
  */
-int SUP::gdim(){
+int SUP::gdim() const{
 
    return dim;
 
@@ -482,7 +520,7 @@ int SUP::gdim(){
  * @param SZ_i input SUP_PQ SZ_i
  * @return inproduct between this and input matrix SZ_i, defined as Tr(this SZ_i)
  */
-double SUP::ddot(SUP &SZ_i){
+double SUP::ddot(const SUP &SZ_i) const{
 
    double ward = 0.0;
 
@@ -578,17 +616,14 @@ void SUP::proj_U(){
    //eerst M_Gamma + Q(M_Q) + ( G(M_G) + T1(M_T1) + T2(M_T2) ) in O stoppen
    TPM O(M,N);
 
-   O.collaps(0,*this);
+   //collaps onto traceless TPM space
+   O.collaps(1,*this);
 
    //dan de inverse overlapmatrix hierop laten inwerken en in this[0] stoppen
    SZ_tp[0]->S(-1,O);
 
    //fill up the rest with the right maps
    this->fill();
-
-   //Nu is de projectie op de u^\alpha's gebeurd.
-   //Nu nog de projectie op de u^i's: dus component langs u^0 eruit halen
-   this->proj_U_Tr();
 
 }
 
@@ -598,13 +633,16 @@ void SUP::proj_U(){
  * is valid.
  * @param tpm input TPM (mostly the hamiltonian of the problem)
  */
-void SUP::proj_C(TPM &tpm){
+void SUP::proj_C(const TPM &tpm){
 
    TPM hulp(M,N);
 
    hulp.collaps(0,*this);
 
    hulp -= tpm;
+
+   //project onto Traceless TPM space
+   hulp.proj_Tr();
 
    //Z_res is the orthogonal piece of this that will be deducted,
    //so the piece of this in the U-space - ham
@@ -616,8 +654,6 @@ void SUP::proj_C(TPM &tpm){
    //and fill it up Johnny
    Z_res.fill();
 
-   Z_res.proj_U_Tr();
-
    *this -= Z_res;
 
 }
@@ -627,7 +663,7 @@ void SUP::proj_C(TPM &tpm){
  * @param S The primal SUP matrix S
  * @param Z The dual SUP matrix Z
  */
-void SUP::D(SUP &S,SUP &Z){
+void SUP::D(const SUP &S,const SUP &Z){
 
    //positieve vierkantswortel uit Z
    SUP Z_copy(Z);
@@ -686,7 +722,7 @@ void SUP::sqrt(int option){
  * @param map SUP that will be multiplied to the left en to the right of matrix object
  * @param object central SUP
  */
-void SUP::L_map(SUP &map,SUP &object){
+void SUP::L_map(const SUP &map,const SUP &object){
 
    for(int i = 0;i < 2;++i)
       SZ_tp[i]->L_map(map.tpm(i),object.tpm(i));
@@ -716,7 +752,7 @@ void SUP::L_map(SUP &map,SUP &object){
  * @param alpha the constant to multiply the SZ_p with
  * @param SZ_p the SUP to be multiplied by alpha and added to (*this)
  */
-void SUP::daxpy(double alpha,SUP &SZ_p){
+void SUP::daxpy(double alpha,const SUP &SZ_p){
 
    for(int i = 0;i < 2;++i)
       SZ_tp[i]->daxpy(alpha,SZ_p.tpm(i));
@@ -738,38 +774,6 @@ void SUP::daxpy(double alpha,SUP &SZ_p){
    SZ_pph->daxpy(alpha,SZ_p.pphm());
 
 #endif
-
-}
-
-/**
- * @return trace of the SUP matrix, defined as sum of the traces of the separate carrierspace matrices
- */
-double SUP::trace(){
-
-   double ward = 0.0;
-
-   for(int i = 0;i < 2;++i)
-      ward += SZ_tp[i]->trace();
-
-#ifdef __G_CON
-   
-   ward += SZ_ph->trace();
-
-#endif
-
-#ifdef __T1_CON
-   
-   ward += SZ_dp->trace();
-
-#endif
-
-#ifdef __T2_CON
-   
-   ward += SZ_pph->trace();
-
-#endif
-
-   return ward;
 
 }
 
@@ -796,7 +800,7 @@ void SUP::proj_C(){
  * @param B right hand matrix
  * @return The product AB
  */
-SUP &SUP::mprod(SUP &A,SUP &B){
+SUP &SUP::mprod(const SUP &A,const SUP &B){
 
    for(int i= 0;i < 2;++i)
       SZ_tp[i]->mprod(A.tpm(i),B.tpm(i));
@@ -827,7 +831,7 @@ SUP &SUP::mprod(SUP &A,SUP &B){
  * Fill the SUP matrix (*this) with a TPM matrix like: this = diag[tpm  Q(tpm)  ( G(tpm) T1(tpm) T2(tpm) ) ]
  * @param tpm input TPM
  */
-void SUP::fill(TPM &tpm){
+void SUP::fill(const TPM &tpm){
 
    *SZ_tp[0] = tpm;
    SZ_tp[1]->Q(1,tpm);
@@ -887,7 +891,7 @@ void SUP::fill(){
  * @param D SUP matrix that defines the structure of the hessian map (the metric) (inverse of the primal Newton equation hessian)
  * @return return the number of iteration required to converge
  */
-int SUP::solve(SUP &B,SUP &D){
+int SUP::solve(SUP &B,const SUP &D){
 
    SUP HB(M,N);
    HB.H(*this,D);
@@ -938,128 +942,11 @@ int SUP::solve(SUP &B,SUP &D){
  * @param B SUP matrix onto which the hessian works.
  * @param D SUP matrix that defines the structure of the map (metric)
  */
-void SUP::H(SUP &B,SUP &D){
+void SUP::H(const SUP &B,const SUP &D){
 
    this->L_map(D,B);
 
    this->proj_C();
-
-}
-
-/**
- * @return the value Tr (1_u 1_u) for the conditions active
- */
-double SUP::U_norm(){
-
-   double norm;
-
-   double q = 1.0 + (M - 2*N)*(M - 1.0)/(N*(N - 1.0));
-
-   norm = M*(M - 1)/2 * (1 + q*q);
-
-#ifdef __G_CON
-
-   double g = (M - N)/(N - 1.0);
-
-   norm += M*M * (1.0 + g*g) + 2*g*M;
-
-#endif
-
-#ifdef __T1_CON
-   
-   double t1 = (M*(M - 1.0) - 3.0*(M - N)*N)/(N*(N - 1.0));
-
-   norm += M*(M - 1.0)*(M - 2.0)/6.0 * t1 * t1;
-
-#endif
-
-#ifdef __T2_CON
-
-   double t2 = (M - N)/(N - 1.0);
-
-   norm += t2* t2 * (M - 1.0)* M*M /2.0 + 2.0 * t2 * (M - 1.0)*M + M*(M - 1.0)*(M - 1.0);
-
-#endif
-
-   return norm;
-
-}
-
-/**
- * orthogonally project (*this) onto the space where the U-trace is zero
- */
-void SUP::proj_U_Tr(){
-
-   double ward = (this->U_trace() )/ (this->U_norm() );
-
-   //dan deze factor aftrekken met u^0
-   SZ_tp[0]->min_unit(ward);
-   SZ_tp[1]->min_qunit(ward);
-
-#ifdef __G_CON
-
-   //dan deze factor aftrekken met u^0
-   SZ_ph->min_gunit(ward);
-
-#endif
-
-#ifdef __T1_CON
-
-   //dan deze factor aftrekken met u^0
-   SZ_dp->min_tunit(ward);
-
-#endif
-
-#ifdef __T2_CON
-
-   //dan deze factor aftrekken met u^0
-   SZ_pph->min_tunit(ward);
-
-#endif
-
-}
-
-/**
- * @return The U-trace of a SUP matrix (*this), which is defined as Tr ( (*this) 1_u), with 1_u defined as diag [1 Q(1) ( G(1) T1(1) T2(1) ) ]
- */
-double SUP::U_trace(){
-
-   //q is the factor by which the unit matrix is multiplied when the Q(1) is taken:
-   double q = 1.0 + (M - 2*N)*(M - 1.0)/(N*(N - 1.0));
-
-   //trace of the Gamma piece of the SUP
-   double ward = SZ_tp[0]->trace();
-
-   //plus q times trace of the Q piece of the SUP
-   ward += q*SZ_tp[1]->trace();
-
-#ifdef __G_CON
-
-   //g is the factor before the identity matrix in the image of G(1)
-   double g = (M - N)/(N - 1.0);
-
-   //skew trace is sum_{ab} G_{aa;bb}
-   ward += g*SZ_ph->trace() + SZ_ph->skew_trace();
-
-#endif
-
-#ifdef __T1_CON
-
-   double t1 = (M*(M - 1.0) - 3.0*N*(M - N))/(N*(N - 1.0));
-
-   ward += t1*SZ_dp->trace();
-
-#endif
-
-#ifdef __T2_CON
-
-   double t2 = (M - N)/(N - 1.0);
-
-   ward += t2*SZ_pph->trace() + SZ_pph->skew_trace();
-
-#endif
-
-   return ward;
 
 }
 
@@ -1070,7 +957,7 @@ double SUP::U_trace(){
  * (*this) = S = primal matrix of the problem
  * @param Z = dual matrix of the problem
  */
-double SUP::center_dev(SUP &Z){
+double SUP::center_dev(const SUP &Z) const{
 
    SUP sqrt_S(*this);
 
@@ -1094,7 +981,7 @@ double SUP::center_dev(SUP &Z){
  * @param Z Current dual point
  * @param max_dev number (double) input by which you can tell the function how far you want to deviate from the central path after the step.
  */
-double SUP::line_search(SUP &DZ,SUP &S,SUP &Z,double max_dev){
+double SUP::line_search(const SUP &DZ,const SUP &S,const SUP &Z,double max_dev) const{
 
    //eerst de huidige deviatie van het centraal pad nemen:
    double center_dev = S.center_dev(Z);

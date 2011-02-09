@@ -44,7 +44,7 @@ DPM::DPM(int M,int N) : BlockMatrix(2) {
  * if counter == 0, allocates and constructs the lists containing the relationship between sp and dp basis.
  * @param dpm_c DPM to be copied into (*this)
  */
-DPM::DPM(DPM &dpm_c) : BlockMatrix(dpm_c) {
+DPM::DPM(const DPM &dpm_c) : BlockMatrix(dpm_c) {
 
    this->N = dpm_c.gN();
    this->M = dpm_c.gM();
@@ -275,7 +275,7 @@ void DPM::construct_lists(){
 /**
  * @return number of particles
  */
-int DPM::gN(){
+int DPM::gN() const{
 
    return N;
 
@@ -284,7 +284,7 @@ int DPM::gN(){
 /**
  * @return number of single particle oribals
  */
-int DPM::gM(){
+int DPM::gM() const{
 
    return M;
 
@@ -543,7 +543,7 @@ int DPM::get_inco(int S,int S_ab,int a,int b,int c,int *i,double *coef) const{
  * @param C term before the sp part of the map
  * @param tpm input TPM
  */
-void DPM::T(double A,double B,double C,TPM &tpm){
+void DPM::T(double A,double B,double C,const TPM &tpm){
 
    //make sp matrix out of tpm
    SPM spm(C,tpm);
@@ -907,7 +907,7 @@ void DPM::T(double A,double B,double C,TPM &tpm){
  * The T1-map: maps a TPM object (tpm) on a DPM object (*this). 
  * @param tpm input TPM
  */
-void DPM::T(TPM &tpm){
+void DPM::T(const TPM &tpm){
 
    double a = 1.0;
    double b = 1.0/(N*(N - 1.0));
@@ -922,7 +922,7 @@ void DPM::T(TPM &tpm){
  * The inverse of the TPM::bar function. It is a T1-like map.
  * @param tpm input TPM
  */
-void DPM::hat(TPM &tpm){
+void DPM::hat(const TPM &tpm){
 
    double a = 1.0/(M - 4.0);
    double b = 1.0/((M - 4.0)*(M - 3.0)*(M - 2.0));
@@ -932,25 +932,7 @@ void DPM::hat(TPM &tpm){
 
 }
 
-/**
- * Deduct from (*this) the T1-map of the unit matrix times a constant (scale)\n\n
- * this -= scale* T1(1) \n\n
- * see notes primal_dual.pdf for more information.
- * @param scale the constant
- */
-void DPM::min_tunit(double scale){
-
-   double t = (M*(M - 1.0) - 3.0*N*(M - N))/(N*(N - 1.0));
-
-   scale *= t;
-
-   for(int S = 0;S < 2;++S)
-      for(int i = 0;i < this->gdim(S);++i)
-         (*this)(S,i,i) -= scale;
-
-}
-
-ostream &operator<<(ostream &output,DPM &dpm_p){
+ostream &operator<<(ostream &output,const DPM &dpm_p){
 
    for(int S = 0;S < dpm_p.gnr();++S){
 

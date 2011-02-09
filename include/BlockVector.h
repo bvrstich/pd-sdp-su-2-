@@ -23,7 +23,7 @@ class BlockVector;
  * @param blockvector_p de BlockVector you want to print
  */
 template<class BlockMatrixType>
-ostream &operator<<(ostream &output,BlockVector<BlockMatrixType> &blockvector_p);
+ostream &operator<<(ostream &output,const BlockVector<BlockMatrixType> &blockvector_p);
 
 /**
  * @author Brecht Verstichel
@@ -41,27 +41,30 @@ class BlockVector{
       BlockVector(BlockMatrixType& );
 
       //copy constructor
-      BlockVector(BlockVector<BlockMatrixType> &);
+      BlockVector(const BlockVector<BlockMatrixType> &);
 
       //destructor
       virtual ~BlockVector();
 
       //overload equality operator
-      BlockVector &operator=(BlockVector<BlockMatrixType> &);
+      BlockVector &operator=(const BlockVector<BlockMatrixType> &);
 
       BlockVector &operator=(double );
 
       //overload += operator
-      BlockVector &operator+=(BlockVector<BlockMatrixType> &);
+      BlockVector &operator+=(const BlockVector<BlockMatrixType> &);
 
       //overload -= operator
-      BlockVector &operator-=(BlockVector<BlockMatrixType> &);
+      BlockVector &operator-=(const BlockVector<BlockMatrixType> &);
 
-      BlockVector &daxpy(double alpha,BlockVector<BlockMatrixType> &);
+      BlockVector &daxpy(double alpha,const BlockVector<BlockMatrixType> &);
 
       BlockVector &operator/=(double );
 
       Vector &operator[](int block);
+
+      //const version
+      const Vector &operator[](int block) const;
 
       //easy to change the numbers
       double &operator()(int block,int index);
@@ -71,25 +74,25 @@ class BlockVector{
 
       void diagonalize(BlockMatrixType &);
 
-      int gnr();
+      int gnr() const;
 
-      int gdim(int);
+      int gdim(int) const;
 
-      int gdeg(int);
+      int gdeg(int) const;
 
-      double sum();
+      double sum() const;
 
-      double log_product();
+      double log_product() const;
 
-      double ddot(BlockVector<BlockMatrixType> &);
+      double ddot(const BlockVector<BlockMatrixType> &) const;
 
       void dscal(double alpha);
 
-      double min();
+      double min() const;
       
-      double max();
+      double max() const;
 
-      double centerpot(double );
+      double centerpot(double ) const;
 
    private:
 
@@ -140,7 +143,7 @@ BlockVector<BlockMatrixType>::BlockVector(BlockMatrixType &MT){
  * @param vec_copy The blockvector you want to be copied into the object you are constructing, make sure that it is an allocated and filled blockvector!
  */
 template<class BlockMatrixType>
-BlockVector<BlockMatrixType>::BlockVector(BlockVector<BlockMatrixType> &vec_copy){
+BlockVector<BlockMatrixType>::BlockVector(const BlockVector<BlockMatrixType> &vec_copy){
 
    this->nr = vec_copy.gnr();
 
@@ -184,7 +187,7 @@ BlockVector<BlockMatrixType>::~BlockVector(){
  * @param blockvector_copy The blockvector you want to be copied into this
  */
 template<class BlockMatrixType>
-BlockVector<BlockMatrixType> &BlockVector<BlockMatrixType>::operator=(BlockVector<BlockMatrixType> &blockvector_copy){
+BlockVector<BlockMatrixType> &BlockVector<BlockMatrixType>::operator=(const BlockVector<BlockMatrixType> &blockvector_copy){
 
    for(int i = 0;i < nr;++i)
       *blockvector[i] = blockvector_copy[i];
@@ -212,7 +215,7 @@ BlockVector<BlockMatrixType> &BlockVector<BlockMatrixType>::operator=(double a){
  * @param blockvector_pl The blockvector you want to add to this
  */
 template<class BlockMatrixType>
-BlockVector<BlockMatrixType> &BlockVector<BlockMatrixType>::operator+=(BlockVector<BlockMatrixType> &blockvector_pl){
+BlockVector<BlockMatrixType> &BlockVector<BlockMatrixType>::operator+=(const BlockVector<BlockMatrixType> &blockvector_pl){
 
    for(int i = 0;i < nr;++i)
       *blockvector[i] += blockvector_pl[i];
@@ -226,7 +229,7 @@ BlockVector<BlockMatrixType> &BlockVector<BlockMatrixType>::operator+=(BlockVect
  * @param blockvector_pl The blockvector you want to deduct from this
  */
 template<class BlockMatrixType>
-BlockVector<BlockMatrixType> &BlockVector<BlockMatrixType>::operator-=(BlockVector<BlockMatrixType> &blockvector_pl){
+BlockVector<BlockMatrixType> &BlockVector<BlockMatrixType>::operator-=(const BlockVector<BlockMatrixType> &blockvector_pl){
 
    for(int i = 0;i < nr;++i)
       *blockvector[i] -= blockvector_pl[i];
@@ -241,7 +244,7 @@ BlockVector<BlockMatrixType> &BlockVector<BlockMatrixType>::operator-=(BlockVect
  * @param blockvector_pl the BlockVector to be multiplied by alpha and added to this
  */
 template<class BlockMatrixType>
-BlockVector<BlockMatrixType> &BlockVector<BlockMatrixType>::daxpy(double alpha,BlockVector<BlockMatrixType> &blockvector_pl){
+BlockVector<BlockMatrixType> &BlockVector<BlockMatrixType>::daxpy(double alpha,const BlockVector<BlockMatrixType> &blockvector_pl){
 
    for(int i = 0;i < nr;++i)
       blockvector[i]->daxpy(alpha,blockvector_pl[i]);
@@ -277,6 +280,18 @@ Vector &BlockVector<BlockMatrixType>::operator[](int i){
 }
 
 /**
+ * Get the Vector located in block i: the const version
+ * @param i block number
+ * @return the Vector corresponding to this index
+ */
+template<class BlockMatrixType>
+const Vector &BlockVector<BlockMatrixType>::operator[](int i) const{
+
+   return *blockvector[i];
+
+}
+
+/**
  * Write access to the number in block "block" and on index i.
  */
 template<class BlockMatrixType>
@@ -300,7 +315,7 @@ double BlockVector<BlockMatrixType>::operator()(int block,int i) const {
  * @return the nr of blocks in the blockVector
  */
 template<class BlockMatrixType>
-int BlockVector<BlockMatrixType>::gnr(){
+int BlockVector<BlockMatrixType>::gnr() const{
 
    return nr;
 
@@ -311,7 +326,7 @@ int BlockVector<BlockMatrixType>::gnr(){
  * @param block index of the block u want the dimension of.
  */
 template<class BlockMatrixType>
-int BlockVector<BlockMatrixType>::gdim(int block){
+int BlockVector<BlockMatrixType>::gdim(int block) const{
 
    return dim[block];
 
@@ -322,7 +337,7 @@ int BlockVector<BlockMatrixType>::gdim(int block){
  * @param i the index of the block
  */
 template<class BlockMatrixType>
-int BlockVector<BlockMatrixType>::gdeg(int i){
+int BlockVector<BlockMatrixType>::gdeg(int i) const{
 
    return degen[i];
 
@@ -332,7 +347,7 @@ int BlockVector<BlockMatrixType>::gdeg(int i){
  * @return the sum of all the elements in the blockvector, weighing the blocks with their degeneracy.
  */
 template<class BlockMatrixType>
-double BlockVector<BlockMatrixType>::sum(){
+double BlockVector<BlockMatrixType>::sum() const{
 
    double ward = 0;
 
@@ -347,7 +362,7 @@ double BlockVector<BlockMatrixType>::sum(){
  * @return the logarithm of the product of all the elements in the blockvector (so the sum of all the logarithms), again weighed with their degeneracies
  */
 template<class BlockMatrixType>
-double BlockVector<BlockMatrixType>::log_product(){
+double BlockVector<BlockMatrixType>::log_product() const{
 
    double ward = 0;
 
@@ -363,7 +378,7 @@ double BlockVector<BlockMatrixType>::log_product(){
  * @param blockvector_i input blockvector
  */
 template<class BlockMatrixType>
-double BlockVector<BlockMatrixType>::ddot(BlockVector &blockvector_i){
+double BlockVector<BlockMatrixType>::ddot(const BlockVector &blockvector_i) const{
 
    double ward = 0.0;
 
@@ -387,7 +402,7 @@ void BlockVector<BlockMatrixType>::dscal(double alpha){
 }
 
 template<class BlockMatrixType>
-ostream &operator<<(ostream &output,BlockVector<BlockMatrixType> &blockvector_p){
+ostream &operator<<(ostream &output,const BlockVector<BlockMatrixType> &blockvector_p){
 
    for(int i = 0;i < blockvector_p.gnr();++i){
 
@@ -408,7 +423,7 @@ ostream &operator<<(ostream &output,BlockVector<BlockMatrixType> &blockvector_p)
  * watch out, only works when BlockVector is filled with the eigenvalues of a diagonalized Matrix object
  */
 template<class BlockMatrixType>
-double BlockVector<BlockMatrixType>::min(){
+double BlockVector<BlockMatrixType>::min() const{
 
    double ward = blockvector[0]->min();
 
@@ -425,7 +440,7 @@ double BlockVector<BlockMatrixType>::min(){
  * watch out, only works when BlockVector is filled with the eigenvalues of a diagonalized Matrix object
  */
 template<class BlockMatrixType>
-double BlockVector<BlockMatrixType>::max(){
+double BlockVector<BlockMatrixType>::max() const{
 
    double ward = blockvector[0]->max();
 
@@ -443,7 +458,7 @@ double BlockVector<BlockMatrixType>::max(){
  * @return the result of the function
  */
 template<class BlockMatrixType>
-double BlockVector<BlockMatrixType>::centerpot(double alpha){
+double BlockVector<BlockMatrixType>::centerpot(double alpha) const{
 
    double ward = 0.0;
 

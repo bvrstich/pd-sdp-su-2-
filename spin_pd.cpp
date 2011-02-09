@@ -37,8 +37,11 @@ int main(void){
 
    cout.precision(10);
 
-   int M = 8;//dim sp hilbert space
-   int N = 4;//nr of particles
+   int M = 12;//dim sp hilbert space
+   int N = 5;//nr of particles
+
+   TPM S_2(M,N);
+   S_2.set_S_2();
 
    //hamiltoniaan
    TPM ham(M,N);
@@ -73,7 +76,7 @@ int main(void){
 
    while(flag != 3){
 
-      cout << (S.tpm(0)).trace() << "\t" << pd_gap << "\t" << center_dev << "\t" << energy << "\t";
+      cout << (S.tpm(0)).trace() << "\t" << pd_gap << "\t" << center_dev << "\t" << energy << "\t" << S.tpm(0).spin() << "\t";
 
       //matrix D aanmaken voor de hessiaan van het duale stelsel
       SUP D(M,N);
