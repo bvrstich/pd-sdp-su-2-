@@ -76,16 +76,16 @@ void GutMat::p(TPM &tpm){
 
    for(int a = 0;a < M/2;++a){
 
-      //(*this)(a,a) = spm(a,a);
+      (*this)(a,a) = spm(a,a);
 
       for(int b = a;b < M/2;++b){
 
-       //  (*this)(a,b) += spm(a,b);
+         (*this)(a,b) += spm(a,b);
 
-         tmp = /*tpm(0,a,a,b,a) + */tpm(0,a,b,b,b);
+         tmp = tpm(0,a,a,b,a) + tpm(0,a,b,b,b);
 
-         //if(a != b)
-            //tmp /= std::sqrt(2.0);
+         if(a != b)
+            tmp /= std::sqrt(2.0);
 
          (*this)(a,b) -= tmp;
 

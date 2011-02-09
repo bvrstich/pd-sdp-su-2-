@@ -42,7 +42,7 @@ int main(void){
 
    //hamiltoniaan
    TPM ham(M,N);
-   ham.hubbard(1.0);
+   ham.hubbard(10.0);
 
    SUP S(M,N);
    S.init_S();
@@ -213,12 +213,12 @@ int main(void){
 
    Vector vgm1(gm);
    cout << vgm1 << endl;
-/*
+
    gm.q(S.tpm(0));
 
    Vector vgm2(gm);
    cout << vgm2;
-*/
+
    return 0;
 
 }
