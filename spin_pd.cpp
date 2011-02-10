@@ -40,8 +40,7 @@ int main(void){
    int M = 12;//dim sp hilbert space
    int N = 5;//nr of particles
 
-   TPM S_2(M,N);
-   S_2.set_S_2();
+   LinIneq::init(M,N,1);
 
    //hamiltoniaan
    TPM ham(M,N);
@@ -51,7 +50,7 @@ int main(void){
    S.init_S();
 
    SUP Z(M,N);
-   Z.init_Z(100.0,ham,S);
+   Z.init_Z(1000.0,ham,S);
 
    int dim = Z.gdim();
 
