@@ -5,6 +5,7 @@
 #include <fstream>
 
 using std::ostream;
+using std::ofstream;
 
 #include "BlockMatrix.h"
 
@@ -90,7 +91,9 @@ class TPM : public BlockMatrix {
 
       void sp_pairing(double );
 
-      void uncouple(const char *);
+      void uncouple(const char *) const;
+
+      void uncouple_ofstream(ofstream &) const;
 
       //G down afbeelding
       void G(const PHM &);

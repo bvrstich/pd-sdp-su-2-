@@ -223,3 +223,20 @@ void LinCon::fill_Random(){
    I_c_bar->bar(1.0,*I_c);
 
 }
+
+/**
+ * print all the essentials of the LinCon, spin uncoupled! object to a file
+ * @param filename The filename
+ */
+void LinCon::uncouple(const char *filename) const {
+
+   ofstream output(filename);
+   output.precision(10);
+
+   output << i_c << endl;
+
+   I_c->uncouple_ofstream(output);
+
+   output << I_c_tr << endl; 
+
+}

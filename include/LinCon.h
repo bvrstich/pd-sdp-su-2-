@@ -57,6 +57,8 @@ class LinCon{
 
       void fill_Random();
 
+      void uncouple(const char *) const;
+
    private:
 
       //!Traceless Constraint matrix: Watch out, shifted with i_c unity, so that Tr Gamma I_c > 0

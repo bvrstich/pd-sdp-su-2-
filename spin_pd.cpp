@@ -37,8 +37,8 @@ int main(void){
 
    cout.precision(10);
 
-   int M = 12;//dim sp hilbert space
-   int N = 5;//nr of particles
+   int M = 8;//dim sp hilbert space
+   int N = 3;//nr of particles
 
    LinIneq::init(M,N,1);
 
@@ -205,6 +205,8 @@ int main(void){
    cout << "E_0 = " << energy << " with accuracy of " << pd_gap << " and a deviation from centrality of " << center_dev << endl;
    cout << endl;
    cout << "<S^2>\t=\t" << S.tpm(0).spin() << endl;
+
+   LinIneq::clean();
 
    //print density matrix to file
    //   (S.tpm(0)).out("workspace/input/rdm.in");

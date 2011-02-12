@@ -65,9 +65,10 @@ void LinIneq::init(int M,int N,int nr_in){
    //tenslotte
    Matrix I_bar_overlap(nr);
 
+   //Attention: Difference with spin uncoupled version here: times two because the "bar" matrix is only half the bar matrix of the uncoupled version.
    for(int i = 0;i < nr;++i)
       for(int j = i;j < nr;++j)
-         I_bar_overlap(i,j) = li[i]->gI_bar().ddot(li[j]->gI_bar());
+         I_bar_overlap(i,j) = 2.0*li[i]->gI_bar().ddot(li[j]->gI_bar());
 
    I_bar_overlap.symmetrize();
 
@@ -361,11 +362,12 @@ void LinIneq::fill(const TPM &tpm){
    for(int i = 0;i < nr;++i)
       proj[i] = (li[i]->gI()).ddot(tpm) + li[i]->gI_tr() * tr;
 
+   //Attention: Here also times two because of the "half" bar matrix in the spin coupled version
    SPM spm(M,N);
    spm.bar(1.0,tpm);
 
    for(int i = 0;i < nr;++i)
-      proj_bar[i] = (li[i]->gI_bar()).ddot(spm) + li[i]->gI_tr() * (M - 1.0) * 2.0 * tr;
+      proj_bar[i] = 2.0 * ( (li[i]->gI_bar()).ddot(spm) + li[i]->gI_tr() * (M - 1.0) * 2.0 * tr );
 
 }
 
@@ -541,4 +543,14 @@ void LinIneq::fill_Random(){
    for(int i = 0;i < nr;++i)
       proj[i] = (double) rand()/RAND_MAX;
    
+}
+
+/**
+ * Test function that prints the coefficients of the inverse linear system of equations for the overlapmatrix.
+ */
+void LinIneq::print_coef() {
+
+   for(int i = 0;i < 4*nr*nr;++i)
+      cout << i << "\t" << coef[i] << endl;
+
 }

@@ -94,6 +94,8 @@ class LinIneq{
 
       void dscal(double);
 
+      static void print_coef();
+
    private:
 
       //!LinCon array containing the different LinCon objects
