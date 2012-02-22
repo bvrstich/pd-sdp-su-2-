@@ -41,7 +41,7 @@ int main(int argc,char *argv[]){
    cout.precision(10);
 
    int M = 8;//dim sp hilbert space
-   int N = 4;//nr of particles
+   int N = 3;//nr of particles
 
    double g = atof(argv[1]);
 
@@ -66,7 +66,7 @@ int main(int argc,char *argv[]){
    //eerst centering
    double gamma = 1.0;
 
-   double tolerance = 1.0e-4;
+   double tolerance = 1.0e-5;
 
    //flag == 0 : initiele centering run (tot op tolerance)
    //flag == 1 : doe een stap met gamma = 0
@@ -151,7 +151,7 @@ int main(int argc,char *argv[]){
       else{
 
          //zoek de ideale afstand (geef ook een waarde mee voor de maximale afwijking van het centraal pad):
-         a = DS.line_search(DZ,S,Z,2.0);
+         a = DS.line_search(DZ,S,Z,1.0);
 
          S.daxpy(a,DS);
          Z.daxpy(a,DZ);
@@ -209,7 +209,12 @@ int main(int argc,char *argv[]){
    cout << endl;
    cout << "<S^2>\t=\t" << S.tpm(0).spin() << endl;
 
+   cout << endl;
    cout << g*2/M << "\t" << ham.ddot(S.tpm(0)) << endl;
+   cout << endl;
+
+   BlockVector<TPM> v(S.tpm(0));
+   cout << v;
 
    //print density matrix to file
    //(S.tpm(0)).out(filename);

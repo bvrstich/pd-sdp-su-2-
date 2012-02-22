@@ -747,7 +747,7 @@ void TPM::sp_pairing(double pair_coupling){
 
    //pairing interaction term
    for(int a = 0;a < M/2;++a)
-      x[a] = 1.0;
+      x[a] = 1.0 + a;
 
    //normeren op 1/2
    double ward = 0.0;

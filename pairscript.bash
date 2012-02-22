@@ -1,4 +1,5 @@
-for I in {4..200..4}
+for I in {0..80..4}
 do
-   ./spin_pd `echo $I/10 | bc -l`
+   nn=`echo $I/10 | bc -l`
+   ./spin_pd $nn
 done
