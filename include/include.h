@@ -50,3 +50,16 @@
 
 #include "SUP.h"
 #include "EIG.h"
+
+#include "R.h"
+#include "Gauss.h"
+#include "input.h"
+#include "MxElem.h"
+#include "MxElemFiller.h"
+
+#include "preamble.h"
+
+#include "CartInt.h"
+#include "SphInt.h"
+
+#include "Transform.h"

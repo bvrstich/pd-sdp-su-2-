@@ -12,6 +12,8 @@ class SUP;
 class PHM;
 class DPM;
 class PPHM;
+class SphInt;
+class CartInt;
 
 /**
  * @author Brecht Verstichel
@@ -60,6 +62,10 @@ class TPM : public BlockMatrix {
       int gM() const;
 
       void hubbard(double U);
+
+      void molecular(const SphInt &);
+
+      void molecular(const CartInt &);
 
       //Q afbeelding en zijn inverse
       void Q(int option,const TPM &);

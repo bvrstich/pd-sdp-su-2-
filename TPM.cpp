@@ -1157,3 +1157,132 @@ void TPM::in_sp(const char *filename){
    this->symmetrize();
 
 }
+
+/**
+ * Fill a TPM object with Spherical molecular matrix elements in the SphInt object
+ * @param si input SphInt object
+ */
+void TPM::molecular(const SphInt &si) {
+   int a,b,c,d;
+   int sign;
+
+   double norm;
+
+   for(int S = 0;S < 2;++S){
+
+      sign = 1 - 2*S;
+
+      for(int i = 0;i < this->gdim(S);++i){
+
+         a = t2s[S][i][0];
+         b = t2s[S][i][1];
+
+         for(int j = i;j < this->gdim(S);++j){
+
+            c = t2s[S][j][0];
+            d = t2s[S][j][1];
+
+            //determine the norm for the basisset
+            norm = 1.0;
+
+            if(S == 0){
+
+               if(a == b)
+                  norm /= std::sqrt(2.0);
+
+               if(c == d)
+                  norm /= std::sqrt(2.0);
+
+            }
+
+            (*this)(S,i,j) = 0.0;
+
+            if(b == d)
+               (*this)(S,i,j) +=  1.0/(N - 1.0) * (si.gT(a,c) + si.gU(a,c));
+
+            if(a == d)
+               (*this)(S,i,j) +=  sign /(N - 1.0) * (si.gT(b,c) + si.gU(b,c));
+
+            if(b == c)
+               (*this)(S,i,j) +=  sign /(N - 1.0) * (si.gT(a,d) + si.gU(a,d));
+
+            if(a == c)
+               (*this)(S,i,j) +=  1.0/(N - 1.0) * (si.gT(b,d) + si.gU(b,d));
+
+            (*this)(S,i,j) += si.gV(a,b,c,d) + sign * si.gV(a,b,d,c);
+
+            (*this)(S,i,j) *= norm;
+
+         }
+      }
+
+   }
+
+   this->symmetrize();
+
+}
+
+/**
+ * Fill a TPM object with Cartesian molecular matrix elements in the SphInt object
+ * @param ci input SphInt object
+ */
+void TPM::molecular(const CartInt &ci) {
+
+   int a,b,c,d;
+   int sign;
+
+   double norm;
+
+   for(int S = 0;S < 2;++S){
+
+      sign = 1 - 2*S;
+
+      for(int i = 0;i < this->gdim(S);++i){
+
+         a = t2s[S][i][0];
+         b = t2s[S][i][1];
+
+         for(int j = i;j < this->gdim(S);++j){
+
+            c = t2s[S][j][0];
+            d = t2s[S][j][1];
+
+            //determine the norm for the basisset
+            norm = 1.0;
+
+            if(S == 0){
+
+               if(a == b)
+                  norm /= std::sqrt(2.0);
+
+               if(c == d)
+                  norm /= std::sqrt(2.0);
+
+            }
+
+            (*this)(S,i,j) = 0.0;
+
+            if(b == d)
+               (*this)(S,i,j) +=  1.0/(N - 1.0) * (ci.gT(a,c) + ci.gU(a,c));
+
+            if(a == d)
+               (*this)(S,i,j) +=  sign /(N - 1.0) * (ci.gT(b,c) + ci.gU(b,c));
+
+            if(b == c)
+               (*this)(S,i,j) +=  sign /(N - 1.0) * (ci.gT(a,d) + ci.gU(a,d));
+
+            if(a == c)
+               (*this)(S,i,j) +=  1.0/(N - 1.0) * (ci.gT(b,d) + ci.gU(b,d));
+
+            (*this)(S,i,j) += ci.gV(a,b,c,d) + sign * ci.gV(a,b,d,c);
+
+            (*this)(S,i,j) *= norm;
+
+         }
+      }
+
+   }
+
+   this->symmetrize();
+
+}

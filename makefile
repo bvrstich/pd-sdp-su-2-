@@ -19,6 +19,14 @@ CPPSRC	= spin_pd.cpp\
             PPHM.cpp\
             SUP.cpp\
             EIG.cpp\
+            R.cpp\
+            Gauss.cpp\
+            MxElemFiller.cpp\
+            MxElem.cpp\
+            input.cpp\
+            CartInt.cpp\
+            SphInt.cpp\
+            Transform.cpp
 
 OBJ	= $(CPPSRC:.cpp=.o)
 
@@ -30,7 +38,7 @@ BRIGHT_ROOT= .
 
 INCLUDE = ./include
 
-LIBS= -llapack -lblas
+LIBS= -llapack -lblas -lgmp -lgmpxx
 
 CC	= gcc
 CXX	= g++

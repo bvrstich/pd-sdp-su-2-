@@ -37,15 +37,21 @@ int main(void){
 
    cout.precision(10);
 
-   int M = 12;//dim sp hilbert space
-   int N = 5;//nr of particles
+   CartInt::init();
+   SphInt::init();
 
-   TPM S_2(M,N);
-   S_2.set_S_2();
+   int M = 2*SphInt::gdim();//dim sp hilbert space
+   int N = SphInt::gN();//nr of particles
+
+   CartInt ci;
+   ci.norm();
+
+   SphInt si(ci);
+   si.orthogonalize();
 
    //hamiltoniaan
    TPM ham(M,N);
-   ham.hubbard(1.0);
+   ham.molecular(si);
 
    SUP S(M,N);
    S.init_S();
@@ -76,7 +82,7 @@ int main(void){
 
    while(flag != 3){
 
-      cout << (S.tpm(0)).trace() << "\t" << pd_gap << "\t" << center_dev << "\t" << energy << "\t" << S.tpm(0).spin() << "\t";
+      cout << (S.tpm(0)).trace() << "\t" << pd_gap << "\t" << center_dev << "\t" << energy + CartInt::gNucRepEn() << "\t" << S.tpm(0).spin() << "\t";
 
       //matrix D aanmaken voor de hessiaan van het duale stelsel
       SUP D(M,N);
@@ -203,12 +209,15 @@ int main(void){
    cout << endl;
    cout << "FINAL RESULT " << endl;
    cout << endl;
-   cout << "E_0 = " << energy << " with accuracy of " << pd_gap << " and a deviation from centrality of " << center_dev << endl;
+   cout << "E_0 = " << energy + CartInt::gNucRepEn() << " with accuracy of " << pd_gap << " and a deviation from centrality of " << center_dev << endl;
    cout << endl;
    cout << "<S^2>\t=\t" << S.tpm(0).spin() << endl;
 
    //print density matrix to file
    //   (S.tpm(0)).out("workspace/input/rdm.in");
+
+   SphInt::clear();
+   CartInt::clear();
 
    return 0;
 
