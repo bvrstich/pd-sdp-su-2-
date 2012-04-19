@@ -57,7 +57,7 @@ int main(void){
    S.init_S();
 
    SUP Z(M,N);
-   Z.init_Z(100.0,ham,S);
+   Z.init_Z(1000.0,ham,S);
 
    int dim = Z.gdim();
 
@@ -70,7 +70,7 @@ int main(void){
    //eerst centering
    double gamma = 1.0;
 
-   double tolerance = 1.0e-4;
+   double tolerance = 1.0e-7;
 
    //flag == 0 : initiele centering run (tot op tolerance)
    //flag == 1 : doe een stap met gamma = 0
