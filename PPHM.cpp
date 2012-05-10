@@ -647,14 +647,14 @@ void PPHM::in_sp(const char *filename){
 
       if(S == 0){
 
-         i = s2pph[S][S_ab][a][b][(-c + M/2)%(M/2)];
-         j = s2pph[S][S_de][d][e][(-z + M/2)%(M/2)];
+         i = s2pph[S][S_ab][a][b][c];
+         j = s2pph[S][S_de][d][e][z];
 
       }
       else{
 
-         i = s2pph[S][0][a][b][(-c + M/2)%(M/2)];
-         j = s2pph[S][0][d][e][(-z + M/2)%(M/2)];
+         i = s2pph[S][0][a][b][c];
+         j = s2pph[S][0][d][e][z];
 
       }
 

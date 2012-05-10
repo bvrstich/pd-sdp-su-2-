@@ -1163,6 +1163,7 @@ void TPM::in_sp(const char *filename){
  * @param si input SphInt object
  */
 void TPM::molecular(const SphInt &si) {
+
    int a,b,c,d;
    int sign;
 
