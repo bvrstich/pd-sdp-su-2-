@@ -47,7 +47,7 @@ SUP::SUP(int M,int N){
 
 #ifdef __T2_CON
 
-   this->n_pph = M*M*(M - 1)/2;
+   this->n_pph = M*M*(M - 1)/2 + M;
 
    SZ_pph = new PPHM(M,N);
 

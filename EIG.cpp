@@ -43,7 +43,7 @@ EIG::EIG(SUP &SZ){
 
 #ifdef __T2_CON
    
-   dim += M*M*(M - 1)/2;
+   dim += M*M*(M - 1)/2 + M;
 
    v_pph = new BlockVector<PPHM>(SZ.pphm());
 
@@ -388,27 +388,21 @@ double EIG::max() const{
       ward = v_tp[1]->max();
 
 #ifdef __G_CON
-
    //highest eigenvalue of G block
    if(ward < v_ph->max())
       ward = v_ph->max();
-
 #endif
 
 #ifdef __T1_CON
-
    //highest eigenvalue of the T1 block
    if(ward < v_dp->max())
       ward = v_dp->max();
-
 #endif
 
 #ifdef __T2_CON
-
    //highest eigenvalue of the T2 block
    if(ward < v_pph->max())
       ward = v_pph->max();
-
 #endif
 
    return ward;
@@ -426,27 +420,21 @@ double EIG::center_dev() const{
    double log_product = v_tp[0]->log_product() + v_tp[1]->log_product();
 
 #ifdef __G_CON
-
    sum += v_ph->sum();
 
    log_product += v_ph->log_product();
-
 #endif
 
 #ifdef __T1_CON
-
    sum += v_dp->sum();
 
    log_product += v_dp->log_product();
-
 #endif
 
 #ifdef __T2_CON
-
    sum += v_pph->sum();
 
    log_product += v_pph->log_product();
-
 #endif
 
    return dim*log(sum/(double)dim) - log_product;
@@ -470,21 +458,15 @@ double EIG::centerpot(double alpha,const EIG &eigen_Z,double c_S,double c_Z) con
       ward -= v_tp[i]->centerpot(alpha) + (eigen_Z.tpv(i)).centerpot(alpha);
 
 #ifdef __G_CON
-
    ward -= v_ph->centerpot(alpha) + (eigen_Z.phv()).centerpot(alpha);
-
 #endif
 
 #ifdef __T1_CON
-
    ward -= v_dp->centerpot(alpha) + (eigen_Z.dpv()).centerpot(alpha);
-
 #endif
 
 #ifdef __T2_CON
-
    ward -= v_pph->centerpot(alpha) + (eigen_Z.pphv()).centerpot(alpha);
-
 #endif
 
    return ward;

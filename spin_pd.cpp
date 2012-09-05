@@ -208,7 +208,7 @@ int main(void){
    cout << "<S^2>\t=\t" << S.tpm(0).spin() << endl;
 
    //print density matrix to file
-   //   (S.tpm(0)).out("workspace/input/rdm.in");
+   (S.tpm(0)).out("workspace/input/rdm.in");
 
    return 0;
 
