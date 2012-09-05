@@ -38,7 +38,7 @@ int main(void){
    cout.precision(10);
 
    int M = 12;//dim sp hilbert space
-   int N = 5;//nr of particles
+   int N = 6;//nr of particles
 
    TPM S_2(M,N);
    S_2.set_S_2();
