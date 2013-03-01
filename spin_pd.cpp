@@ -40,12 +40,36 @@ int main(void){
    int M = 12;//dim sp hilbert space
    int N = 6;//nr of particles
 
-   TPM S_2(M,N);
-   S_2.set_S_2();
+   Matrix X(M/2);
+
+   for(int a = 0;a < M/2;++a)
+      for(int b = 0;b < M/2;++b)
+         X(a,b) = (double) (rand() - RAND_MAX/2.0)/(double)RAND_MAX;
+
+   ofstream out("X.out");
+   out.precision(15);
+
+   out << X;
+
+   double norm = std::sqrt(3.0 * X.ddot(X));
+
+   X.dscal(1.0/norm);
+
+   PHM phm(M,N);
+
+   phm = 0.0;
+
+   for(int a = 0;a < M/2;++a)
+      for(int b = 0;b < M/2;++b)
+         for(int c = 0;c < M/2;++c)
+            for(int d = 0;d < M/2;++d)
+               phm(1,a,b,c,d) = X(a,b)* X(c,d);
 
    //hamiltoniaan
    TPM ham(M,N);
-   ham.hubbard(1.0);
+   ham.G(phm);
+
+   ham.dscal(-1);
 
    SUP S(M,N);
    S.init_S();
@@ -64,7 +88,7 @@ int main(void){
    //eerst centering
    double gamma = 1.0;
 
-   double tolerance = 1.0e-4;
+   double tolerance = 1.0e-5;
 
    //flag == 0 : initiele centering run (tot op tolerance)
    //flag == 1 : doe een stap met gamma = 0
@@ -207,8 +231,8 @@ int main(void){
    cout << endl;
    cout << "<S^2>\t=\t" << S.tpm(0).spin() << endl;
 
-   //print density matrix to file
-   (S.tpm(0)).out("workspace/input/rdm.in");
+   BlockVector<PHM> v(S.phm());
+   cout << v;
 
    return 0;
 
